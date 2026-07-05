@@ -1,1771 +1,741 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>중국어 맞춤 레벨 테스트 - Chinese Tutor</title>
-    <!-- Outfit & Noto Sans KR Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        :root {
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-highlight: rgba(255, 255, 255, 0.12);
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --accent-primary: #818cf8; /* Indigo */
-            --accent-secondary: #f472b6; /* Pink */
-            --accent-green: #34d399;
-            --accent-red: #f87171;
-            --font-main: 'Noto Sans KR', sans-serif;
-            --font-numbers: 'Outfit', sans-serif;
-            --radius-lg: 20px;
-            --radius-md: 12px;
-            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>부수(Radical) 학습 툴</title>
+  <!-- Google Fonts: Noto Sans KR (Korean), Noto Sans SC (Simplified Chinese) for beautiful typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-color: #f7f9fa;
+      --primary-color: #4a90e2; /* Blue color highlighting the radical */
+      --secondary-color: #e8f2ff;
+      --text-color: #2c3e50;
+      --card-bg: #ffffff;
+      --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), 0 1px 8px rgba(0, 0, 0, 0.02);
+      --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-        body {
-            font-family: var(--font-main);
-            background: var(--bg-gradient);
-            color: var(--text-primary);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow-x: hidden;
-            padding: 20px;
-        }
+    body {
+      font-family: 'Noto Sans KR', 'Noto Sans SC', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
 
-        /* Ambient glowing backgrounds */
-        .ambient-glow {
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(129, 140, 248, 0.15) 0%, rgba(0,0,0,0) 70%);
-            z-index: 0;
-            pointer-events: none;
-        }
-        .glow-1 { top: -100px; left: -100px; }
-        .glow-2 { bottom: -100px; right: -100px; }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
 
-        /* Main Container */
-        .app-container {
-            width: 100%;
-            max-width: 650px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: var(--radius-lg);
-            padding: 40px 30px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            z-index: 10;
-            position: relative;
-            transition: var(--transition-smooth);
-        }
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1a252f;
+      margin-bottom: 8px;
+    }
 
-        /* Screen state controls */
-        .screen {
-            display: none;
-            animation: fadeIn 0.5s var(--transition-smooth);
-        }
-        .screen.active {
-            display: block;
-        }
+    header p {
+      font-size: 1rem;
+      color: #7f8c8d;
+    }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+    /* Main Container */
+    .container {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
 
-        /* Typography */
-        h1 {
-            font-size: 2.2rem;
-            font-weight: 900;
-            text-align: center;
-            margin-bottom: 10px;
-            background: linear-gradient(to right, var(--text-primary), var(--accent-primary), var(--accent-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.5px;
-        }
+    /* Radical Header Card */
+    .radical-card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+      box-shadow: var(--card-shadow);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(0, 0, 0, 0.03);
+      transition: var(--transition);
+    }
 
-        .subtitle {
-            color: var(--text-secondary);
-            font-size: 1rem;
-            text-align: center;
-            margin-bottom: 30px;
-            line-height: 1.5;
-        }
+    .radical-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(90deg, var(--primary-color), #3498db);
+    }
 
-        /* Common Elements: Inputs & Grid */
-        .form-row {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-row .form-group {
-            margin-bottom: 0;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-        .form-control {
-            width: 100%;
-            padding: 14px 16px;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-md);
-            color: var(--text-primary);
-            font-size: 1rem;
-            font-family: var(--font-main);
-            transition: var(--transition-smooth);
-        }
-        .form-control:focus {
-            outline: none;
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.25);
-        }
+    .radical-badge {
+      display: inline-block;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      background-color: var(--secondary-color);
+      padding: 6px 16px;
+      border-radius: 50px;
+      margin-bottom: 15px;
+      letter-spacing: 1px;
+    }
 
-        /* Level Selector Cards */
-        .level-selector-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-        .level-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-md);
-            padding: 16px 20px;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            text-align: left;
-        }
-        .level-card:hover {
-            background: var(--glass-highlight);
-            border-color: var(--accent-primary);
-            transform: translateY(-2px);
-        }
-        .level-card.selected {
-            background: rgba(129, 140, 248, 0.12);
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 15px rgba(129, 140, 248, 0.15);
-        }
-        .level-radio {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            border: 2px solid var(--glass-border);
-            margin-right: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .level-card.selected .level-radio {
-            border-color: var(--accent-primary);
-            background: var(--accent-primary);
-        }
-        .level-card.selected .level-radio::after {
-            content: '';
-            width: 8px;
-            height: 8px;
-            background: #0f172a;
-            border-radius: 50%;
-        }
-        .level-info h3 {
-            font-size: 1.05rem;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-        .level-info p {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
+    .radical-display {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 10px;
+    }
 
-        /* Buttons */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(to right, var(--accent-primary), #6366f1);
-            border: none;
-            border-radius: var(--radius-md);
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            gap: 10px;
-            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 25px -5px rgba(99, 102, 241, 0.6);
-            filter: brightness(1.1);
-        }
-        .btn:active {
-            transform: translateY(0);
-        }
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--glass-border);
-            box-shadow: none;
-            color: var(--text-primary);
-        }
-        .btn-outline:hover {
-            background: var(--glass-highlight);
-            box-shadow: none;
-            border-color: var(--text-secondary);
-        }
+    .radical-character {
+      font-family: 'Noto Sans SC', sans-serif;
+      font-size: 4.5rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      line-height: 1;
+      text-shadow: 0 4px 10px rgba(74, 144, 226, 0.15);
+    }
 
-        /* Progress Area */
-        .progress-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 25px;
-        }
-        .progress-bar-wrapper {
-            flex-grow: 1;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 3px;
-            margin: 0 15px;
-            overflow: hidden;
-        }
-        .progress-bar-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
-            border-radius: 3px;
-            transition: width 0.3s ease;
-        }
-        .progress-text {
-            font-family: var(--font-numbers);
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--accent-primary);
-        }
+    .radical-meaning {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text-color);
+    }
 
-        /* Quiz Panel */
-        .quiz-panel {
-            min-height: 280px;
-        }
-        .question-card {
-            margin-bottom: 30px;
-        }
-        .question-meta {
-            display: inline-block;
-            padding: 4px 10px;
-            background: rgba(129, 140, 248, 0.15);
-            color: var(--accent-primary);
-            border-radius: 30px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-            text-transform: uppercase;
-        }
-        .question-text {
-            font-size: 1.3rem;
-            font-weight: 700;
-            line-height: 1.5;
-            margin-bottom: 8px;
-            white-space: pre-line;
-        }
-        .question-pinyin {
-            font-family: var(--font-numbers);
-            font-size: 1.05rem;
-            color: var(--accent-secondary);
-            margin-bottom: 24px;
-            font-weight: 300;
-        }
+    .radical-desc {
+      color: #7f8c8d;
+      font-size: 0.95rem;
+      margin-top: 5px;
+    }
 
-        /* Options list */
-        .options-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .option-item {
-            display: flex;
-            align-items: center;
-            padding: 16px 20px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            text-align: left;
-        }
-        .option-item:hover {
-            background: var(--glass-highlight);
-            border-color: var(--accent-primary);
-            transform: translateX(4px);
-        }
-        .option-item.selected {
-            background: rgba(129, 140, 248, 0.15);
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 15px rgba(129, 140, 248, 0.1);
-        }
-        .option-indicator {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            border: 2px solid var(--glass-border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-            font-size: 0.8rem;
-            font-family: var(--font-numbers);
-            font-weight: 700;
-            color: var(--text-secondary);
-            flex-shrink: 0;
-            transition: var(--transition-smooth);
-        }
-        .option-item.selected .option-indicator {
-            background: var(--accent-primary);
-            border-color: var(--accent-primary);
-            color: #0f172a;
-        }
-        .option-text {
-            font-size: 1rem;
-            font-weight: 500;
-            line-height: 1.4;
-        }
+    /* Word Grid Layout */
+    .word-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
 
-        /* Results Screen styles */
-        .result-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        .result-badge {
-            display: inline-block;
-            padding: 8px 16px;
-            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
-            border-radius: 50px;
-            font-size: 0.85rem;
-            font-weight: 800;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 10px rgba(129, 140, 248, 0.3);
-        }
-        .score-circle {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            border: 6px solid var(--glass-border);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            background: rgba(255, 255, 255, 0.02);
-            position: relative;
-        }
-        .score-num {
-            font-family: var(--font-numbers);
-            font-size: 2.8rem;
-            font-weight: 800;
-            line-height: 1;
-        }
-        .score-max {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-top: 4px;
-        }
-        .hsk-level-box {
-            background: rgba(129, 140, 248, 0.1);
-            border: 1px solid rgba(129, 140, 248, 0.2);
-            border-radius: var(--radius-md);
-            padding: 24px;
-            margin-bottom: 30px;
-        }
-        .hsk-title {
-            text-align: center;
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: var(--accent-primary);
-            margin-bottom: 15px;
-        }
-        .diagnostic-card {
-            background: rgba(15, 23, 42, 0.4);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-md);
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        .diagnostic-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-        .hsk-desc {
-            font-size: 0.95rem;
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
+    /* Card Flip Structure */
+    .flip-card {
+      background-color: transparent;
+      height: 200px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
 
-        /* Review answers */
-        .review-section {
-            margin-top: 30px;
-            margin-bottom: 30px;
-        }
-        .review-toggle {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 20px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            font-weight: 700;
-            transition: var(--transition-smooth);
-        }
-        .review-toggle:hover {
-            background: var(--glass-highlight);
-        }
-        .review-content {
-            display: none;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 15px;
-            max-height: 400px;
-            overflow-y: auto;
-            padding-right: 8px;
-        }
-        /* Custom scrollbar for review section */
-        .review-content::-webkit-scrollbar {
-            width: 6px;
-        }
-        .review-content::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 3px;
-        }
-        .review-content::-webkit-scrollbar-thumb {
-            background: var(--glass-border);
-            border-radius: 3px;
-        }
-        .review-content::-webkit-scrollbar-thumb:hover {
-            background: var(--text-secondary);
-        }
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-style: preserve-3d;
+    }
 
-        .review-card {
-            background: rgba(15, 23, 42, 0.4);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-md);
-            padding: 16px;
-        }
-        .review-card.correct {
-            border-left: 4px solid var(--accent-green);
-        }
-        .review-card.incorrect {
-            border-left: 4px solid var(--accent-red);
-        }
-        .review-q-header {
-            font-size: 0.95rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-        }
-        .status-badge {
-            font-size: 0.75rem;
-            font-weight: 700;
-        }
-        .status-badge.correct { color: var(--accent-green); }
-        .status-badge.incorrect { color: var(--accent-red); }
-        
-        .review-choices {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-top: 8px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            padding-bottom: 8px;
-            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
-        }
-        .review-explanation {
-            margin-top: 8px;
-            font-size: 0.85rem;
-            line-height: 1.5;
-            color: #c7d2fe; /* light indigo */
-            background: rgba(129, 140, 248, 0.05);
-            padding: 10px;
-            border-radius: 6px;
-        }
+    /* JavaScript will apply this class on click or hover */
+    .flip-card.flipped .flip-card-inner,
+    .flip-card:hover .flip-card-inner {
+      transform: rotateY(180deg);
+    }
 
-        .button-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 16px;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid rgba(0, 0, 0, 0.03);
+    }
 
-        /* Toast notification */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid var(--accent-primary);
-            color: var(--text-primary);
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            z-index: 1000;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-        }
+    .card-front {
+      background-color: var(--card-bg);
+      color: var(--text-color);
+    }
 
-        /* Mobile adjustments */
-        @media (max-width: 600px) {
-            body {
-                padding: 10px;
-            }
-            .app-container {
-                padding: 24px 16px;
-                border-radius: 16px;
-            }
-            h1 {
-                font-size: 1.8rem;
-            }
-            .question-text {
-                font-size: 1.15rem;
-            }
-            .option-item {
-                padding: 14px 16px;
-            }
-            .button-group {
-                grid-template-columns: 1fr;
-            }
-            .form-row {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-        }
-    </style>
+    .card-back {
+      background: linear-gradient(135deg, #2c3e50, #1a252f);
+      color: white;
+      transform: rotateY(180deg);
+      padding: 20px;
+    }
+
+    /* Character styling inside front card */
+    .hanzi-display {
+      font-family: 'Noto Sans SC', sans-serif;
+      font-size: 4rem;
+      font-weight: 700;
+      letter-spacing: -2px;
+      margin-bottom: 5px;
+    }
+
+    /* Highlight class for radicals */
+    .radical-highlight {
+      color: var(--primary-color);
+      position: relative;
+    }
+
+    .remain-stroke {
+      color: #34495e;
+    }
+
+    .card-level-badge {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #7f8c8d;
+      background-color: #f0f3f4;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-top: 5px;
+    }
+
+    /* Back Card Content styling */
+    .pinyin-display {
+      font-size: 1.4rem;
+      font-weight: 500;
+      color: #5dade2;
+      margin-bottom: 8px;
+    }
+
+    .meaning-display {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 5px;
+    }
+
+    .details-display {
+      font-size: 0.9rem;
+      color: #bdc3c7;
+      margin-bottom: 8px;
+    }
+
+    /* TTS Audio Button */
+    .audio-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .audio-btn:hover {
+      background: var(--primary-color);
+      transform: scale(1.1);
+    }
+
+    .audio-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    /* Control Button */
+    .controls {
+      display: flex;
+      justify-content: center;
+      margin-top: 15px;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--primary-color) 0%, #3498db 100%);
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      font-size: 1rem;
+      font-weight: 700;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(74, 144, 226, 0.4);
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-icon {
+      font-size: 1.2rem;
+    }
+
+    /* Fade transition animation */
+    .fade-out {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .fade-in {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 600px) {
+      body {
+        padding: 15px;
+      }
+      
+      header h1 {
+        font-size: 1.6rem;
+      }
+
+      .radical-character {
+        font-size: 3.5rem;
+      }
+
+      .radical-meaning {
+        font-size: 1.4rem;
+      }
+
+      .word-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .flip-card {
+        height: 160px;
+      }
+
+      .hanzi-display {
+        font-size: 3rem;
+      }
+
+      .pinyin-display {
+        font-size: 1.1rem;
+      }
+
+      .meaning-display {
+        font-size: 1rem;
+      }
+      
+      .details-display {
+        font-size: 0.8rem;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="ambient-glow glow-1"></div>
-    <div class="ambient-glow glow-2"></div>
 
-    <div class="app-container">
-        <!-- SCREEN 1: START & LEVEL SELECT -->
-        <div id="start-screen" class="screen active">
-            <h1>중국어 레벨 테스트</h1>
-            <p class="subtitle">개인별 맞춤 테스트로 정확한 중국어 등급을 파악해보세요!</p>
+  <header>
+    <h1>부수 연상 암기</h1>
+    <p>부수를 이해하면 한자가 쉬워집니다. 카드를 클릭하거나 마우스 오버해 보세요!</p>
+  </header>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="student-name">학생 이름</label>
-                    <input type="text" id="student-name" class="form-control" placeholder="홍길동" required autocomplete="off">
-                </div>
-                <div class="form-group">
-                    <label for="student-age">나이</label>
-                    <input type="number" id="student-age" class="form-control" placeholder="25" required autocomplete="off" min="1" max="120">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="student-phone">연락처</label>
-                <input type="tel" id="student-phone" class="form-control" placeholder="010-1234-5678" required autocomplete="off">
-            </div>
-
-            <div class="form-group">
-                <label>테스트 등급 선택</label>
-                <div class="level-selector-container">
-                    <div class="level-card selected" data-level="hsk12">
-                        <div class="level-radio"></div>
-                        <div class="level-info">
-                            <h3>HSK 1~2급 과정 (기초·입문)</h3>
-                            <p>기초 성조, 한어병음, 일상 인사말 및 생활 단어 중심</p>
-                        </div>
-                    </div>
-                    <div class="level-card" data-level="hsk34">
-                        <div class="level-radio"></div>
-                        <div class="level-info">
-                            <h3>HSK 3~4급 과정 (초·중급)</h3>
-                            <p>실용 회화, 상황 유추, 중급 필수 구조 및 기본 문법 중심</p>
-                        </div>
-                    </div>
-                    <div class="level-card" data-level="hsk5">
-                        <div class="level-radio"></div>
-                        <div class="level-info">
-                            <h3>HSK 5급 과정 (고급 진단)</h3>
-                            <p>논리적인 서면어 지문, 다의어 분석 및 관용 표현 변별</p>
-                        </div>
-                    </div>
-                    <div class="level-card" data-level="hsk6">
-                        <div class="level-radio"></div>
-                        <div class="level-info">
-                            <h3>HSK 6급 과정 (최상위 완성)</h3>
-                            <p>사자성어, 한문 연원 접속사 및 어법 오류 변별 테스트</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <button id="btn-start" class="btn" style="margin-top: 10px;">
-                테스트 시작하기 <i class="fa-solid fa-chevron-right"></i>
-            </button>
-        </div>
-
-        <!-- SCREEN 2: QUIZ -->
-        <div id="quiz-screen" class="screen">
-            <div class="progress-container">
-                <span class="progress-text" id="current-q-num">Q. 01 / 20</span>
-                <div class="progress-bar-wrapper">
-                    <div id="progress-bar" class="progress-bar-fill"></div>
-                </div>
-            </div>
-
-            <div class="quiz-panel">
-                <div class="question-card">
-                    <span class="question-meta" id="q-level-meta">LEVEL 1</span>
-                    <h2 class="question-text" id="q-text">질문 텍스트</h2>
-                    <p class="question-pinyin" id="q-pinyin">pinyin</p>
-                </div>
-
-                <div class="options-list" id="options-container">
-                    <!-- Dynamic rendering -->
-                </div>
-            </div>
-
-            <button id="btn-next" class="btn" style="margin-top: 40px;" disabled>
-                다음 문제 <i class="fa-solid fa-arrow-right"></i>
-            </button>
-        </div>
-
-        <!-- SCREEN 3: RESULTS -->
-        <div id="result-screen" class="screen">
-            <div class="result-header">
-                <span class="result-badge" id="result-badge-level">HSK 1~2급 과정</span>
-                <h1 id="result-student-name">홍길동 님의 진단 결과</h1>
-            </div>
-
-            <div class="score-circle">
-                <span class="score-num" id="total-score">0</span>
-                <span class="score-max">/ 20 점</span>
-            </div>
-
-            <div class="hsk-level-box">
-                <div class="hsk-title" id="hsk-title">진단 등급 결과</div>
-                
-                <!-- Diagnostic Map Comment -->
-                <div class="diagnostic-card">
-                    <div class="diagnostic-header" style="color: var(--accent-secondary);">
-                        <i class="fa-solid fa-map-location-dot"></i>
-                        <span>진단맵 코멘트</span>
-                    </div>
-                    <p class="hsk-desc" id="hsk-comment">평가 분석 중...</p>
-                </div>
-
-                <!-- Learning Roadmap -->
-                <div class="diagnostic-card">
-                    <div class="diagnostic-header" style="color: var(--accent-green);">
-                        <i class="fa-solid fa-graduation-cap"></i>
-                        <span>앞으로의 공부 방향</span>
-                    </div>
-                    <p class="hsk-desc" id="hsk-roadmap">평가 분석 중...</p>
-                </div>
-            </div>
-
-            <!-- Review Answers Accordion -->
-            <div class="review-section">
-                <div class="review-toggle" onclick="toggleReview()">
-                    <span>상세 오답풀이 및 전체 해설 확인</span>
-                    <i class="fa-solid fa-chevron-down" id="review-icon"></i>
-                </div>
-                <div class="review-content" id="review-content">
-                    <!-- Dynamic review items -->
-                </div>
-            </div>
-
-            <div class="button-group">
-                <button id="btn-copy-report" class="btn">
-                    <i class="fa-solid fa-copy"></i> 상담 보고서 복사
-                </button>
-                <button id="btn-restart" class="btn btn-outline">
-                    <i class="fa-solid fa-rotate-left"></i> 처음으로 이동
-                </button>
-            </div>
-        </div>
+  <div class="container">
+    <!-- Radical Display Section -->
+    <div class="radical-card" id="radicalCard">
+      <div class="radical-badge">오늘의 핵심 부수</div>
+      <div class="radical-display">
+        <span class="radical-character" id="radicalChar">亻</span>
+        <span class="radical-meaning" id="radicalMeaning">사람 (사람 인)</span>
+      </div>
+      <p class="radical-desc" id="radicalDesc">사람의 서 있는 모습을 본뜬 부수로, 주로 '사람의 행동, 상태, 성질' 등과 관련된 단어에 쓰입니다.</p>
     </div>
 
-    <!-- Notification Toast -->
-    <div id="toast" class="toast">
-        <i class="fa-solid fa-circle-check" style="color: var(--accent-green);"></i>
-        <span id="toast-message">클립보드에 복사되었습니다!</span>
+    <!-- HSK Words Grid -->
+    <div class="word-grid" id="wordGrid">
+      <!-- Generated dynamically by Javascript -->
     </div>
 
-    <script>
-        // QUESTION DATABASES BY LEVEL WITH DETAILED EXPLANATIONS
-        const questionDatabase = {
-            hsk12: [
-                {
-                    level: "HSK 1",
-                    question: "중국어로 처음 만났을 때 나누는 인사말 '안녕하세요'에 해당하는 올바른 한자는?",
-                    pinyin: "nǐ hǎo",
-                    options: ["谢谢", "再见", "你好", "对不起"],
-                    answer: 2,
-                    explanation: "중국어의 가장 대표적인 기초 인사말은 '你好(nǐ hǎo)'입니다. 谢谢(xièxie)는 '감사합니다', 再见(zàijiàn)은 '헤어질 때 인사(안녕히 가세요)', 对不起(duìbuqǐ)는 '죄송합니다'입니다."
-                },
-                {
-                    level: "HSK 1",
-                    question: "중국어로 고마움을 전하는 표현 '감사합니다'의 성조 및 발음 표기가 올바른 것은?",
-                    pinyin: "xièxie",
-                    options: ["谢谢 (xièxie)", "没关系 (méi guānxi)", "不客气 (bú kèqi)", "再见 (zàijiàn)"],
-                    answer: 0,
-                    explanation: "고마움을 표현하는 동사 '고맙다/감사하다'는 '谢谢(xièxie)'로 발음하며, 뒤의 '谢'는 성조를 약하게 내는 경성(轻声)으로 발음하는 것이 자연스럽습니다."
-                },
-                {
-                    level: "HSK 1",
-                    question: "다음 한자 중 1인칭 대명사 '나(저)'를 나타내는 글자는?",
-                    pinyin: "wǒ",
-                    options: ["我", "你", "他", "她"],
-                    answer: 0,
-                    explanation: "'나/저'를 나타내는 1인칭 대명사는 '我(wǒ)'입니다. 다른 선택지 중 '你(nǐ)'는 2인칭 단수(너), '他(tā)'는 3인칭 단수(그), '她(tā)'는 3인칭 단수 여성(그녀)을 뜻합니다."
-                },
-                {
-                    level: "HSK 1",
-                    question: "괄호 안에 들어갈 가장 적절한 성분은?\n'我 ( ) 韩国人。' (나는 한국인입니다.)",
-                    pinyin: "wǒ ( ) Hánguórén.",
-                    options: ["是", "不", "很", "和"],
-                    answer: 0,
-                    explanation: "'A는 B이다'를 정의하는 동사 성분은 '是(shì)'입니다. '我'는 주어, '韩国人'은 목적어 역할을 하여 '나는 한국인이다'를 형성합니다. '不'는 부정부사, '很'은 정도부사, '和'는 접속사입니다."
-                },
-                {
-                    level: "HSK 1",
-                    question: "다음 단어가 뜻하는 알맞은 과일 이름은?\n'苹果'",
-                    pinyin: "píngguǒ",
-                    options: ["우유", "바나나", "사과", "딸기"],
-                    answer: 2,
-                    explanation: "'苹果(píngguǒ)'는 대표 과일인 '사과'를 뜻합니다. 참고로 우유는 '牛奶(niúnǎi)', 바나나는 '香蕉(xiāngjiāo)', 딸기는 '草莓(cǎoméi)'라고 합니다."
-                },
-                {
-                    level: "HSK 1",
-                    question: "다음 단어 중 마시는 '물'을 의미하는 한자는?",
-                    pinyin: "shuǐ",
-                    options: ["水", "茶", "米饭", "苹果"],
-                    answer: 0,
-                    explanation: "'물'을 가리키는 글자는 '水(shuǐ)'입니다. '茶(chá)'는 찻잎을 우린 차, '米饭(mǐfàn)'은 쌀밥, '苹果'는 사과입니다."
-                },
-                {
-                    level: "HSK 1",
-                    question: "가족들이 함께 모여 사는 곳인 '집(가정)'을 뜻하는 한자는?",
-                    pinyin: "jiā",
-                    options: ["家", "医院", "学校", "商店"],
-                    answer: 0,
-                    explanation: "'집' 또는 '가정'을 일컫는 단어는 '家(jiā)'입니다. '医院(yīyuàn)'은 병원, '学校(xuéxiào)'는 학교, '商店(shāngdiàn)'은 일반 가게 및 상점을 뜻합니다."
-                },
-                {
-                    level: "HSK 1",
-                    question: "중국어로 시간 '지금 몇 시인가요?'의 빈칸에 알맞은 의문사는?\n'现在 ( ) 点？'",
-                    pinyin: "xiànzài ( ) diǎn?",
-                    options: ["多少", "几", "什么", "谁"],
-                    answer: 1,
-                    explanation: "시간(몇 시)이나 나이 등 대개 10 미만의 작은 숫자를 질문할 때는 의문사 '几(jǐ)'를 동반하여 '几点'으로 물어봅니다. '多少(duōshao)'는 10 이상의 수량이나 가격을 질문할 때 많이 쓰입니다."
-                },
-                {
-                    level: "HSK 1",
-                    question: "다음 단어 중 반려동물 '고양이'를 가리키는 글자는?",
-                    pinyin: "māo",
-                    options: ["猫", "狗", "鸟", "鱼"],
-                    answer: 0,
-                    explanation: "'고양이'를 뜻하는 한자는 '猫(māo)'입니다. '狗(gǒu)'는 개, '鸟(niǎo)'는 새, '鱼(yú)'는 물고기를 가리킵니다."
-                },
-                {
-                    level: "HSK 1",
-                    question: "학교에서 가르침을 주는 직업군인 '선생님'을 나타내는 단어는?",
-                    pinyin: "lǎoshī",
-                    options: ["老师", "学生", "医生", "朋友"],
-                    answer: 0,
-                    explanation: "스승을 가리키는 '선생님'은 '老师(lǎoshī)'입니다. '学生(xuéshēng)'은 학생, '医生(yīshēng)'은 의사, '朋友(péngyou)'는 친구를 의미합니다."
-                },
-                {
-                    level: "HSK 2",
-                    question: "다음 공간 방향 지시어 중 '뒤(뒤쪽)'를 뜻하는 단어는?",
-                    pinyin: "hòubian",
-                    options: ["前面", "后面", "左边", "右边"],
-                    answer: 1,
-                    explanation: "방향사 중 '뒤쪽'은 '后面(hòumiàn) 또는 后边'입니다. 前面(qiánmiàn)은 앞, 左边(zuǒbian)은 왼쪽, 右边(yòubian)은 오른쪽입니다."
-                },
-                {
-                    level: "HSK 2",
-                    question: "다음 취미/활동 단어의 알맞은 뜻은?\n'跑步'",
-                    pinyin: "pǎobù",
-                    options: ["달리기(조깅)하다", "공부하다", "운전하다", "노래하다"],
-                    answer: 0,
-                    explanation: "'跑步(pǎobù)'는 조깅하거나 달린다는 뜻의 이합동사입니다. 공부하다는 '学习(xuéxí)', 운전하다는 '开车(kāichē)', 노래하다는 '唱歌(chànggē)'입니다."
-                },
-                {
-                    level: "HSK 2",
-                    question: "괄호 안에 들어갈 비교문 어법상 알맞은 조사는?\n'Today天气比昨天 ( ) 多了。' (오늘 날씨가 어제보다 훨씬 좋아졌다.)",
-                    pinyin: "jīntiān tiānqì bǐ zuótiān ( ) duō le.",
-                    options: ["很", "真", "好", "太"],
-                    answer: 2,
-                    explanation: "중국어 비교문 'A 比 B + 형용사' 어순에서는 수식 형용사 앞에 '很, 非常, 太' 같은 일반 정도부사를 절대로 사용할 수 없으며, 형용사 뒤에 차이를 보충하는 '多了(훨씬 더)'를 붙여 '好多了' 형태로 수식해야 합니다."
-                },
-                {
-                    level: "HSK 2",
-                    question: "다음 중 태어난 날을 축하하는 단어인 '생일'의 한자 표기는?",
-                    pinyin: "shēngrì",
-                    options: ["生日", "节日", "星期", "时间"],
-                    answer: 0,
-                    explanation: "'태어난 날'을 의미하는 단어는 '生日(shēngrì)'입니다. '节日(jiérì)'은 명절이나 기념일, '星期(xīngqī)'는 요일, '时间(shíjiān)'은 일반적인 시간을 말합니다."
-                },
-                {
-                    level: "HSK 2",
-                    question: "병원에서 진료를 해 주는 전문인인 '의사'를 나타내는 어휘는?",
-                    pinyin: "yīshēng",
-                    options: ["医生", "老师", "司机", "警察"],
-                    answer: 0,
-                    explanation: "환자를 보살피고 약을 처방하는 의사는 '医生(yīshēng)'입니다. '司机(sījī)'는 차량 운전기사, '警察(jǐngchá)'는 범죄를 예방하는 경찰관입니다."
-                },
-                {
-                    level: "HSK 2",
-                    question: "다음 이동 수단 중 두 바퀴로 움직이는 '자전거'의 중국어 한자는?",
-                    pinyin: "zìxíngchē",
-                    options: ["自行车", "公共汽车", "火车", "飞机"],
-                    answer: 0,
-                    explanation: "스스로 바퀴를 굴려 간다는 의미의 '자전거'는 '自行车(zìxíngchē)'입니다. 公共汽车(gōnggòngqìchē)는 버스, 火车(huǒchē)는 기차, 飞机(fēijī)는 비행기입니다."
-                },
-                {
-                    level: "HSK 2",
-                    question: "어떤 일을 계획하여 미리 챙기는 '준비하다'에 해당하는 단어는?",
-                    pinyin: "zhǔnbèi",
-                    options: ["准备", "帮助", "觉得", "希望"],
-                    answer: 0,
-                    explanation: "'准备(zhǔnbèi)'는 상황을 대비해 갖춘다는 뜻의 '준비하다'입니다. 帮助는 남을 돕는 조력, 觉得는 마음속으로 느끼거나 여기는 것, 希望은 바라고 기대함을 뜻합니다."
-                },
-                {
-                    level: "HSK 2",
-                    question: "집안에 구획된 개인 공간인 '방'을 지칭하는 단어는?",
-                    pinyin: "fángjiān",
-                    options: ["房间", "教室", "办公室", "机场"],
-                    answer: 0,
-                    explanation: "사적인 구획 공간인 방은 '房间(fángjiān)'입니다. 教室는 수업을 듣는 교실, 办公室는 근무처인 사무실, 机场은 여객기가 뜨고 내리는 공항입니다."
-                },
-                {
-                    level: "HSK 2",
-                    question: "물건 가격이 낮음을 표현하는 형용사인 '싸다, 저렴하다'는?",
-                    pinyin: "piányi",
-                    options: ["便宜", "贵", "忙", "累"],
-                    answer: 0,
-                    explanation: "비용이 적게 드는 것은 '便宜(piányi)'라고 합니다. 반대로 가격이 비싼 것은 '贵(guì)'이며, 忙(máng)은 바쁜 상태, 累(lèi)는 신체적 피로를 뜻합니다."
-                },
-                {
-                    level: "HSK 2",
-                    question: "전화 통화 시 상대방을 호출할 때 쓰는 중국어 감탄사는?",
-                    pinyin: "wèi / wéi",
-                    options: ["喂", "哎", "吧", "呢"],
-                    answer: 0,
-                    explanation: "전화기 수화기를 들고 말하는 '여보세요'는 중국어로 '喂(wèi 혹은 전화를 받을 때 wéi로 성조 변화)'라고 발음합니다."
-                }
-            ],
-            hsk34: [
-                {
-                    level: "HSK 3",
-                    question: "다음 단어의 알맞은 뜻은?\n'打算'",
-                    pinyin: "dǎsuàn",
-                    options: ["청소하다", "계획하다(~할 작정이다)", "의논하다", "참가하다"],
-                    answer: 1,
-                    explanation: "'打算(dǎsuàn)'은 향후 행동을 마음먹거나 계획을 수립할 때 사용하는 동사 겸 명사입니다. 청소하다는 '打扫(dǎsǎo)', 토의하다는 '商量(shāngliang)'입니다."
-                },
-                {
-                    level: "HSK 3",
-                    question: "괄호 안에 공통으로 들어갈 가정 조건 접속사 짝은?\n'( ) 明天下雨，我们 ( ) 不去爬山了。' (만약 내일 비가 오면, 우리는 등산을 안 갈 것이다.)",
-                    pinyin: "( ) míngtiān xiàyǔ, wǒmen ( ) bú qù páshān le.",
-                    options: ["因为...所以...", "不仅...하고...", "如果...就...", "虽然...但是..."],
-                    answer: 2,
-                    explanation: "가정문을 구성하는 접속사 상용 공식은 '如果...就...(만약 ~한다면 곧 ...할 것이다)'입니다. 因為...所以...는 인과관계, 雖然...但是...는 양보/역접 구조에 사용됩니다."
-                },
-                {
-                    level: "HSK 3",
-                    question: "다음 감정 상태 단어 중 '슬프다, 마음이 아프다'를 뜻하는 단어는?",
-                    pinyin: "nánguò",
-                    options: ["高兴", "难过", "着急", "生气"],
-                    answer: 1,
-                    explanation: "'难过(nánguò)'는 극단적인 슬픔이나 괴로움을 감각하는 형용사입니다. 高兴(gāoxìng)은 기쁜 상태, 着急(zhāojí)는 조급함, 生气(shēngqì)는 분노를 유발함을 뜻합니다."
-                },
-                {
-                    level: "HSK 3",
-                    question: "다음 문장에서 수량 양사 오류가 있는 단어는?\n'我想借一个自行车。' (나는 자전거 한 대를 빌리고 싶다.)",
-                    pinyin: "wǒ xiǎng jiè yí gè zìxíngchē.",
-                    options: ["想 (xiǎng)", "借 (jiè)", "个 (gè - '辆'을 써야 함)", "车 (chē)"],
-                    answer: 2,
-                    explanation: "바퀴가 달린 차량(자전거, 자동차 등)을 세는 단위는 일반 개별 양사 '个'가 아니라, 전용 탈것 양사인 '辆(liàng)'을 사용하여 '一辆自行车'로 적어야 자연스럽습니다."
-                },
-                {
-                    level: "HSK 3",
-                    question: "다음 단어 중 '동네, 주변, 부근'을 뜻하는 어휘는?",
-                    pinyin: "fùjìn",
-                    options: ["附近", "地方", "世界", "环境"],
-                    answer: 0,
-                    explanation: "근접 거리에 위치한 '부근/근처'는 '附近(fùjìn)'입니다. 地方(dìfang)는 장소, 世界(shìjiè)는 온 세상, 环境(huánjìng)은 생활 여건인 환경을 의미합니다."
-                },
-                {
-                    level: "HSK 3",
-                    question: "바쁘지 않고 틈이나 여유가 있을 때 쓰는 어휘는?\n'如果你有( )，来帮我一下。' (너 시간이 있으면, 와서 나 좀 도와줘.)",
-                    pinyin: "rúguǒ nǐ yǒu ( ), lái bāng wǒ yíxià.",
-                    options: ["空儿", "意见", "兴趣", "脾气"],
-                    answer: 0,
-                    explanation: "개인 시간이나 틈을 나타내는 회화체 단어는 '空儿(kòngr)'입니다. '有空儿'는 '시간이 있다'는 필수 상용구입니다. 意见은 개인 의견, 兴趣는 흥미, 脾气는 성질을 뜻합니다."
-                },
-                {
-                    level: "HSK 3",
-                    question: "상대방 의견이나 제안에 '찬성하여 응낙하다'라는 단어는?",
-                    pinyin: "tóngyì",
-                    options: ["同意", "认为", "发现", "决定"],
-                    answer: 0,
-                    explanation: "동일한 생각이나 의견 일치를 선언하는 동사는 '同意(tóngyì)'입니다. '认为(rènwéi)'는 의견의 제시(~라고 생각하다), '发现(fāxiàn)'은 몰랐던 일을 알아채는 발견입니다."
-                },
-                {
-                    level: "HSK 3",
-                    question: "예측하지 못하게 상황이 벌어졌음을 뜻하는 부사는?\n'事情( )发生了变化。' (일이 갑자기 변화가 생겼다.)",
-                    pinyin: "shìqing ( ) fāshēng le biànhuà.",
-                    options: ["突然", "果然", "偶然", "当然"],
-                    answer: 0,
-                    explanation: "예기치 못한 돌발 변화에는 부사 '突然(tūrán, 갑자기)'을 배치합니다. 果然(guǒrán)은 예상대로('역시'), 偶然(ǒurán)은 뜻밖의 우연성을 지칭합니다."
-                },
-                {
-                    level: "HSK 3",
-                    question: "머리가 아프고 열이 나는 건강상의 '감기 걸리다'는?",
-                    pinyin: "gǎnmào",
-                    options: ["感冒", "发烧", "咳嗽", "舒服"],
-                    answer: 0,
-                    explanation: "질병 '감기'는 '感冒(gǎnmào)'라고 합니다. '发烧(fāshāo)'는 몸에 열이 오르는 것, '咳嗽(késou)'는 기침을 하는 증세입니다."
-                },
-                {
-                    level: "HSK 3",
-                    question: "책을 빌리거나 열람하는 공공 장소인 '도서관'을 뜻하는 어휘는?",
-                    pinyin: "túshūguǎn",
-                    options: ["图书馆", "银行", "超市", "公园"],
-                    answer: 0,
-                    explanation: "도서관은 '图书馆(túshūguǎn)'입니다. 银行은 은행, 超市는 마트/슈퍼마켓, 公园은 산책로가 구성된 공원입니다."
-                },
-                {
-                    level: "HSK 4",
-                    question: "다음 단어의 알맞은 뜻은?\n'关键'",
-                    pinyin: "guānjiàn",
-                    options: ["해결책", "인과관계", "관건(가장 중요한 핵심)", "상황"],
-                    answer: 2,
-                    explanation: "'关键(guānjiàn)'은 문제나 일의 성패를 가르는 핵심적인 요점을 명칭하는 명사이자 형용사입니다."
-                },
-                {
-                    level: "HSK 4",
-                    question: "괄호 안에 들어갈 가장 자연스러운 단어는?\n'我们应该 ( ) 别人的意见。' (우리는 타인의 의견을 존중해야 한다.)",
-                    pinyin: "wǒmen yīnggāi ( ) biérén de yìjiàn.",
-                    options: ["尊重", "怀疑", "拒绝", "打扰"],
-                    answer: 0,
-                    explanation: "상대의 가치나 제안을 존중할 때 쓰는 단어는 '尊重(zūnzhòng)'입니다. 怀疑는 의심하다, 拒绝는 거절하다, 打扰는 폐를 끼치다(방해하다)입니다."
-                },
-                {
-                    level: "HSK 4",
-                    question: "다음 단어 중 '~하는 김에'를 뜻하는 단어는?",
-                    pinyin: "shùnbiàn",
-                    options: ["顺便", "重新", "果然", "千万"],
-                    answer: 0,
-                    explanation: "'顺便(shùnbiàn)'은 기왕 움직이는 동선이나 기회에 편의상 덧붙여 수행할 때 쓰는 부사입니다. '千万(qiānwàn)'은 당부할 때 쓰는 '부디/제발'입니다."
-                },
-                {
-                    level: "HSK 4",
-                    question: "중국어 비교문 중 '그녀는 나보다 세 살 많다'의 올바른 어순은?",
-                    pinyin: "tā bǐ wǒ dà sān suì.",
-                    options: ["她比我三岁大。", "她比我大三岁。", "她大比我三岁。", "她我比大三岁。"],
-                    answer: 1,
-                    explanation: "비교문 어순 공식 중 주체와 대상 간의 구체적 차이(수량 보어)는 반드시 술어(dà, 크다/많다) 뒤에 위치해야 하므로 'A 比 B + 형용사 + 수량차이'에 의거해 '她比我大三岁'가 올바른 배열입니다."
-                },
-                {
-                    level: "HSK 4",
-                    question: "다음 빈칸에 들어갈 양보의 접속사는?\n'( ) 困难重重，他依然没有放弃。' (비록 곤란이 겹칠지라도, 그는 여전히 포기하지 않았다.)",
-                    pinyin: "( ) kùnnan chóngchóng, tā yīrán méiyǒu fàngqì.",
-                    options: ["不仅", "哪怕", "尽管", "除非"],
-                    answer: 2,
-                    explanation: "사실로 인정되는 역경을 설정하고 뒷문장에서 전환시킬 때 쓰는 접속사는 '尽管(jǐnguǎn, 비록 ~일지라도)'입니다. '哪怕(nǎpà)'는 아직 일어나지 않은 극단 가설 상황을 양보할 때 씁니다."
-                },
-                {
-                    level: "HSK 4",
-                    question: "다음 단어 중 언어 표현 등이 막힘이 없는 '유창하다'는?",
-                    pinyin: "liúlì",
-                    options: ["流利", "方便", "流行", "暖和"],
-                    answer: 0,
-                    explanation: "말재주가 매끄러운 것은 '流利(liúlì)'입니다. '方便(fāngbiàn)'은 편리함, '流行(liúxíng)'은 대중 유행, '暖和(nuǎnhuo)'는 포근하고 따뜻함을 나타냅니다."
-                },
-                {
-                    level: "HSK 4",
-                    question: "동사 뒤에서 '목적을 달성하거나 어떤 위치에 도달함'을 뜻하는 보어는?\n'我终于买( )了那本书。'",
-                    pinyin: "wǒ zhōngyú mǎi ( ) le nà běn shū.",
-                    options: ["到", "错", "起", "懂"],
-                    answer: 0,
-                    explanation: "원하던 목작을 어렵사리 얻어내거나 구입했을 때 붙는 결과보어는 '到(dào)'입니다. '买到'는 '원하는 책을 손에 넣다/구매 성공하다'는 뜻입니다. 起(qǐ)는 구매할 경제적 능력이 있음을 의미합니다."
-                },
-                {
-                    level: "HSK 4",
-                    question: "성격이나 대인 관계 시 풍기는 '태도'를 뜻하는 한자는?",
-                    pinyin: "tàidu",
-                    options: ["态度", "脾气", "性格", "能力"],
-                    answer: 0,
-                    explanation: "대상을 대하는 행동 방식이나 마음가짐인 태도는 '态度(tàidu)'입니다. '脾气(píqi)'는 성질머리/화내는 성향, '性格(xìnggé)'은 선천·후천적 성격을 의미합니다."
-                },
-                {
-                    level: "HSK 4",
-                    question: "약속이나 일정을 철회하는 '취소하다'에 적합한 단어는?",
-                    pinyin: "qǔxiāo",
-                    options: ["取消", "延迟", "改变", "拒绝"],
-                    answer: 0,
-                    explanation: "기존에 잡힌 효력을 없애서 지우는 행위는 '取消(qǔxiāo)'입니다. '延迟(yánchí)'은 기한 연장, '改变(gǎibiàn)'은 내용을 수정함입니다."
-                },
-                {
-                    level: "HSK 4",
-                    question: "정신적 중압감이나 '스트레스를 경감시키다'의 올바른 호응 동사 조합은?\n'( ) 压力'",
-                    pinyin: "( ) yālì",
-                    options: ["减轻", "减少", "消灭", "降低"],
-                    answer: 0,
-                    explanation: "무게나 압력을 덜어서 가볍게 만들어주는 행위는 동사 '减轻(jiǎnqīng)'과 어울려 '减轻压力'의 명사-동사 결합 형태로 활용됩니다. 减少는 수치·부피의 하락에 씁니다."
-                }
-            ],
-            hsk5: [
-                {
-                    level: "HSK 5",
-                    question: "다음 중 '완화시키다, 누그러뜨리다'를 의미하는 동사는?",
-                    pinyin: "huǎnjiě",
-                    options: ["缓解", "缩短", "消灭", "推迟"],
-                    answer: 0,
-                    explanation: "갈등이나 통증, 긴장 등을 부드럽게 감소시키는 동사는 '缓解(huǎnjiě)'입니다. 缩短(suōduǎn)은 거리나 기한 단축, 推迟(tuīchí)는 일정을 뒤로 미룸입니다."
-                },
-                {
-                    level: "HSK 5",
-                    question: "빈칸에 들어갈 가장 적절한 부사는?\n'这个问题我们 ( ) 要慎重对待。' (이 문제를 우리는 반드시 신중히 대해야 한다.)",
-                    pinyin: "zhè ge wèntí wǒmen ( ) yào shènzhòng duìdài.",
-                    options: ["格外", "务必", "连续", "反正"],
-                    answer: 1,
-                    explanation: "'반드시 꼭 ~해야 한다'며 행동의 강제를 요구하는 명령성 강조 부사는 '务必(wùbì)'입니다. '格外(géwài)'는 더욱/유난히, '反正(fǎnzhèng)'은 어차피라는 뜻입니다."
-                },
-                {
-                    level: "HSK 5",
-                    question: "다음 단어의 알맞은 뜻은?\n'耽误'",
-                    pinyin: "dānwu",
-                    options: ["오해하다", "지체하다, 그르치다", "자랑스러워하다", "위로하다"],
-                    answer: 1,
-                    explanation: "'耽误(dānwu)'는 행동이 지연되어 기회를 날려버리거나 본업에 지장을 주는 상황에 쓰는 부정적 동사입니다."
-                },
-                {
-                    level: "HSK 5",
-                    question: "문맥상 괄호 안에 들어갈 어휘는?\n'我们必须 ( ) 能源，保护生态环境。' (우리는 에너지를 절약하고 생태환경을 보호해야 한다.)",
-                    pinyin: "wǒmen bìxū ( ) néngyuán, bǎohù shēngtài huánjìng.",
-                    options: ["节约", "减少", "吸收", "消费"],
-                    answer: 0,
-                    explanation: "원자재나 재원을 아끼는 어휘는 '节约(jiéyuē, 절약하다)'입니다. '减少(jiǎnshǎo)'는 양을 낮추는 것, '吸收(xīshōu)'는 흡수함입니다."
-                },
-                {
-                    level: "HSK 5",
-                    question: "다음 중 '망설이다, 주저하다'라는 의미의 심리 형용사는?",
-                    pinyin: "yóuyù",
-                    options: ["吃惊", "犹豫", "寂寞", "慌张"],
-                    answer: 1,
-                    explanation: "결단을 쉽게 내리지 못해 서성이는 심리는 '犹豫(yóuyù)'입니다. 吃惊(chījīng)은 소스라치게 놀람, 慌张(huāngzhāng)은 당황하여 갈팡질팡함입니다."
-                },
-                {
-                    level: "HSK 5",
-                    question: "다음 중 '서류 등을 보완하다, 보충하다'와 가장 자연스럽게 호응하는 동사는?\n'( ) 资料'",
-                    pinyin: "( ) zīliào",
-                    options: ["补充", "完善", "充足", "建设"],
-                    answer: 0,
-                    explanation: "불충분한 서류 내용에 새로운 정보를 추가로 얹는 행위는 '补充(bǔchōng, 보충/보완하다)' 동사와 매칭하여 '补充资料'로 부릅니다."
-                },
-                {
-                    level: "HSK 5",
-                    question: "괄호 안에 알맞은 단어는?\n'通过学习，我的汉语水平有了显著的 ( )。' (배움을 통해 중국어 실력이 두드러지게 향상되었다.)",
-                    pinyin: "tōngguò xuéxí, wǒ de Hànyǔ shuǐpíng yǒu le xiǎnzhù de ( ).",
-                    options: ["提高", "高超", "发扬", "成就"],
-                    answer: 0,
-                    explanation: "실력이나 능력이 상향되는 실질적인 결과 명사는 '提高(tígāo)'입니다. '고유한 성질을 드러냄'을 뜻하는 발양은 '发扬(fāyáng)'을 사용합니다."
-                },
-                {
-                    level: "HSK 5",
-                    question: "다음 단어의 알맞은 뜻은?\n'毕竟'",
-                    pinyin: "bìjìng",
-                    options: ["결국, 필경", "틀림없이", "도대체", "오히려"],
-                    answer: 0,
-                    explanation: "'毕竟(bìjìng)'은 어떤 요인을 종합해서 본원적 결론을 내릴 때 쓰는 '결국/필경/아무래도'라는 의미의 부사입니다."
-                },
-                {
-                    level: "HSK 5",
-                    question: "빈칸에 알맞은 단어는?\n'如果有什么问题，请 ( ) 联系我。' (만약 무슨 문제가 있다면 언제든지 연락 주세요.)",
-                    pinyin: "rúguǒ yǒu shénme wèntí, qǐng ( ) liánxì wǒ.",
-                    options: ["随便", "随时", "突然", "陆续"],
-                    answer: 1,
-                    explanation: "시점에 제한 없이 항상 가능함을 나타내는 부사는 '随时(suíshí, 언제든지)'입니다. '随便(suíbiàn)'은 마음대로 혹은 편한 대로 처리한다는 뉘앙스를 풍깁니다."
-                },
-                {
-                    level: "HSK 5",
-                    question: "다음 중 '공헌하다'를 뜻하는 동사-목적어 조합은?",
-                    pinyin: "gòngxiàn",
-                    options: ["做贡献", "有意见", "帮大忙", "下功夫"],
-                    answer: 0,
-                    explanation: "공공의 발전이나 사회에 이바지하여 도움을 주는 동빈 사조는 '做贡献(zuò gòngxiàn)'입니다. '下功夫'는 시간과 애를 쏟다라는 뜻입니다."
-                },
-                {
-                    level: "HSK 5",
-                    question: "다음 문장 중 의미상 자연스러운 어휘는?\n'网络安全对每个人来说都 ( ) 重要。' (네트워크 안전은 누구에게나 지극히 중요하다.)",
-                    pinyin: "wǎngluò ānquán duì měi ge rén lái shuō dōu ( ) zhòngyào.",
-                    options: ["十分", "基本", "逐步", "特意"],
-                    answer: 0,
-                    explanation: "중요도를 강하게 강조하기 위해 형용사 앞에서 매우를 뜻하는 정도부사 '十分(shífēn, 지극히/매우)'을 씁니다. '逐步(zhúbù)'는 걸음마를 떼듯 서서히라는 뜻입니다."
-                },
-                {
-                    level: "HSK 5",
-                    question: "다음 중 '체계적으로 훈련하다'와 가장 어울리는 동사는?\n'( ) 训练'",
-                    pinyin: "( ) xùnliàn",
-                    options: ["系统", "统一", "进行", "符合"],
-                    answer: 2,
-                    explanation: "공식적인 대규모 훈련이나 가치 있는 회의 같은 실질적 동작을 개시·집행할 때는 동사 '进行(jìnxíng, 진행하다)'과 호응하여 '进行训练'으로 씁니다."
-                },
-                {
-                    level: "HSK 5",
-                    question: "다음 단어의 알맞은 반대 표현은?\n'缩短' (단축하다)",
-                    pinyin: "suōduǎn",
-                    options: ["延长", "扩大", "增加", "发展"],
-                    answer: 0,
-                    explanation: "수축하여 거리를 줄이는 '缩短'의 완벽한 반의어는 시간이나 선의 길이를 늘린다는 뜻의 '延长(yáncháng)'입니다."
-                },
-                {
-                    level: "HSK 5",
-                    question: "다음 중 '지극히 칭찬할 만하다' 혹은 '훌륭하다'를 나타내는 어휘는?",
-                    pinyin: "chūsè",
-                    options: ["出色", "平凡", "虚心", "温柔"],
-                    answer: 0,
-                    explanation: "능력이 탁월하여 남들보다 두드러지게 훌륭한 것은 '出色(chūsè)'입니다. '虚心(xūxīn)'은 거만하지 않은 겸손한 태도를 일컫습니다."
-                },
-                {
-                    level: "HSK 5",
-                    question: "괄호 안에 알맞은 단어는?\n'双方在平等 ( ) 的基础上达成了协议。' (쌍방은 평등하고 호혜적인 기초 위에 협의를 달성했다.)",
-                    pinyin: "shuāngfāng zài píngděng ( ) de jīchǔ shàng dáchéng le xiéyì.",
-                    options: ["互利", "让步", "谈判", "竞争"],
-                    answer: 0,
-                    explanation: "협의나 계약 체결 시 쌍방이 유익을 주는 기초 속성을 지칭할 때는 평등과 짝을 지어 '互利(hùlì, 호혜/상호 이익)'로 호칭합니다."
-                },
-                {
-                    level: "HSK 5",
-                    question: "다음 단어의 한국어 의미는?\n'哪怕'",
-                    pinyin: "nǎpà",
-                    options: ["설령 ~할지라도", "심지어", "만약", "게다가"],
-                    answer: 0,
-                    explanation: "'哪怕(nǎpà)'는 실현되지 않은 임의의 최악의 조건을 가정해놓고, '설령 ~할지라도 뒷일은 변하지 않는다'고 외치는 가설 양보 접속사입니다."
-                },
-                {
-                    level: "HSK 5",
-                    question: "빈칸에 알맞은 단어는?\n'在谈判中，我们必须坚持自己的 ( )。' (협상 중에 우리는 우리의 입장을 견지해야 한다.)",
-                    pinyin: "zài tánpàn zhōng, wǒmen bìxū jiānchí zìjǐ de ( ).",
-                    options: ["观点", "立场", "思想", "理论"],
-                    answer: 1,
-                    explanation: "토론이나 분쟁의 대치 상황에서 한쪽 편이 주장하는 확고한 기본 처지를 고수할 때는 명사 '立场(lìchǎng, 입장)'을 동반하여 '坚持立场'으로 배치합니다."
-                },
-                {
-                    level: "HSK 5",
-                    question: "다음 중 '위험을 무릅쓰다'를 뜻하는 동빈 사조는?",
-                    pinyin: "mào xiǎn",
-                    options: ["冒险", "承担", "挑战", "斗争"],
-                    answer: 0,
-                    explanation: "재해나 피해 가능성이 존재하는 거친 환경으로 뛰어드는 동작은 동사 '冒(무릅쓰다)'와 명사 '险(위험)'이 합쳐진 이합사 '冒险(mào xiǎn)'입니다."
-                },
-                {
-                    level: "HSK 5",
-                    question: "다음 단어의 뜻으로 알맞은 것은?\n'讽刺'",
-                    pinyin: "fěngcì",
-                    options: ["칭찬하다", "풍자하다(비꼬다)", "원망하다", "고발하다"],
-                    answer: 1,
-                    explanation: "'讽刺(fěngcì)'는 우회적인 말이나 익살스러운 도구로 사회적 악행이나 개인적 태도를 비판하며 '비꼬다/풍자하다'를 지칭합니다."
-                },
-                {
-                    level: "HSK 5",
-                    question: "빈칸에 들어갈 접속사는?\n'既然决定了，( ) 就要把它做好。' (기왕 결정했으니, 잘 해내야 한다.)",
-                    pinyin: "jìrán juédìng le, ( ) jiù yào bǎ tā zuò hǎo.",
-                    options: ["就", "但", "而", "也"],
-                    answer: 0,
-                    explanation: "이미 벌어진 기정사실의 현황을 앞문장에 깔고 결론을 이끌어낼 때 쓰는 인과접속사 짝꿍 공식은 '既然...就...(기왕 ~한 바에야 곧 ...한다)'입니다."
-                }
-            ],
-            hsk6: [
-                {
-                    level: "HSK 6",
-                    question: "다음 사자성어 중 '조리 있고 당당하며 거침없이 말하다'를 뜻하는 표현은?",
-                    pinyin: "kǎnkǎnértán",
-                    options: ["侃侃而谈", "滔滔不绝", "口若悬河", "胡言乱语"],
-                    answer: 0,
-                    explanation: "단어의 도리나 품격이 묻어나는 당당하고 차분한 달변은 '侃侃而谈(kǎnkǎnértán)'입니다. '滔滔不绝'은 쉴 새 없이 쏟아내는 기세를 묘사합니다."
-                },
-                {
-                    level: "HSK 6",
-                    question: "다음 문장에서 빈칸에 알맞은 서면어(书面语) 접속사는?\n'不管结果如何，我 ( ) 问心无愧。' (결과가 어떻든 간에, 나는 어쨌든 마음에 부끄러움이 없다.)",
-                    pinyin: "bùguǎn jiéguǒ rúhé, wǒ ( ) wènxīn wúkuì.",
-                    options: ["庶几", "终归", "向来", "顿时"],
-                    answer: 1,
-                    explanation: "복잡한 과정을 거쳐 귀결되는 결론의 궁극적 성격을 설명하는 서면어 부사는 '终归(zhōngguī, 결국/어쨌든/결단코)'입니다. 庶几(shùjī)는 바라건대/~에 가깝다라는 고어적 뉘앙스를 지닙니다."
-                },
-                {
-                    level: "HSK 6",
-                    question: "다음 중 '일을 미루어 부과하거나, 책임을 전가하다'를 의미하는 동사는?",
-                    pinyin: "tuīxiè",
-                    options: ["推卸", "拒绝", "拖延", "逃避"],
-                    answer: 0,
-                    explanation: "자신에게 발생한 책무를 회피하여 타인이나 외부로 미루어 던져버리는 행위는 동사 '推卸(tuīxiè)'를 사용하며, '推卸责任(책임을 전가하다)'으로 주로 활용됩니다."
-                },
-                {
-                    level: "HSK 6",
-                    question: "다음 문장 중 문법적으로 오류가 있는 병구(病句)는?",
-                    pinyin: "bìngjù",
-                    options: [
-                        "通过这次活动，使我학到了很多知识。(주어 결여: 使 삭제 필요)",
-                        "虽然下雨了，但我们依然按时出发了。",
-                        "在这个问题上，我们的看法是一致의 것이다.",
-                        "无论是谁，都应该遵守法律。"
-                    ],
-                    answer: 0,
-                    explanation: "첫 번째 보기 '通过...使...' 구문은 개사 '通过'로 인해 행위자가 숨고, '使'로 인해 주어가 완전히 실종된 문장 성분 결여 오류입니다. '使'를 삭제하여 '我'가 문장의 주어로 자리 잡도록 수정해야 합니다."
-                },
-                {
-                    level: "HSK 6",
-                    question: "다음 사자성어의 뜻은?\n'不可思议'",
-                    pinyin: "bùkě sīyì",
-                    options: [
-                        "이해하거나 상상할 수 없을 정도로 신비롭거나 불가사의하다",
-                        "도저히 용서할 수 없다",
-                        "비교할 수 없을 만큼 뛰어나다",
-                        "지나치게 평범하여 가치가 없다"
-                    ],
-                    answer: 0,
-                    explanation: "'不可思议(bùkěsīyì)'는 인간의 상식이나 생각 회로로는 도저히 해석이 불가능할 정도로 불가사의하고 기이한 사실을 지칭합니다."
-                },
-                {
-                    level: "HSK 6",
-                    question: "서면어에서 '비록 ~일지라도(설령)'에 쓰이는 접속사는?",
-                    pinyin: "jíbiàn",
-                    options: ["即便", "固然", "何况", "况且"],
-                    answer: 0,
-                    explanation: "'설령 그것이 사실일지라도'를 표현하는 격식 높은 고어 유래 서면 접속사는 '即便(jíbiàn)'입니다. '固然(gùrán)'은 양보 문장의 '물론 ~이긴 하나'입니다."
-                },
-                {
-                    level: "HSK 6",
-                    question: "다음 단어의 올바른 한국어 뜻은?\n'弥补'",
-                    pinyin: "míbǔ",
-                    options: ["메우다, 보충하여 만회하다", "소멸시키다", "찬양하다", "창조하다"],
-                    answer: 0,
-                    explanation: "'弥补(míbǔ)'는 손실이나 결점, 적자 등 비어버린 흠을 다른 것으로 덮어서 보충 복구한다는 뜻의 동사입니다. '弥补损失(손실을 메우다)'로 상용됩니다."
-                },
-                {
-                    level: "HSK 6",
-                    question: "다음 빈칸에 알맞은 동사는?\n'我们要 ( ) 历史赋予我们的重任。' (우리는 역사가 우리에게 준 중임을 짊어져야 한다.)",
-                    pinyin: "wǒmen yào ( ) lìshǐ fùyǔ wǒmen de zhòngrèn.",
-                    options: ["挑起", "肩负", "继承", "推翻"],
-                    answer: 1,
-                    explanation: "어깨에 지워지는 무거운 의무나 사명을 감당해낸다는 동사는 '肩负(jiānfù, 짊어지다)'이며, '重任(중임)', '使命(사명)' 명사와 밀접히 호응합니다."
-                },
-                {
-                    level: "HSK 6",
-                    question: "다음 사자성어 중 '끊임없이 분발하여 발전하려 노력하다'의 뜻은?",
-                    pinyin: "zìqiáng bùxī",
-                    options: ["自强不息", "半途而废", "得过且过", "一曝十寒"],
-                    answer: 0,
-                    explanation: "'스스로 강해지기 위해 쉬지 않고 매진하다'라는 우수한 사자성어는 '自强不息(zìqiáng bùxī)'입니다. 得过且过는 되는대로 하루하루를 모면해 산다입니다."
-                },
-                {
-                    level: "HSK 6",
-                    question: "괄호 안에 들어갈 어휘는?\n'他的科研成果在学术界引起를 ( )。' (그의 과학 연구 성과는 학계에 큰 파문을 일으켰다.)",
-                    pinyin: "tā de kēyán chéngguǒ zài xuéshùjiè yǐnqǐ le ( ).",
-                    options: ["轰动", "波浪", "反应", "潮流"],
-                    answer: 0,
-                    explanation: "사회적인 이슈나 대중의 큰 충격적 환호를 자아내는 경우 동사 '引起'와 어우러져 '引起轰动(큰 반향을/세상을 들썩이게 만들다)'으로 서술합니다."
-                },
-                {
-                    level: "HSK 6",
-                    question: "다음 사자성어의 뜻은?\n'急功近利'",
-                    pinyin: "jígōng jìnlì",
-                    options: [
-                        "눈앞의 공로와 이익에만 급급하다",
-                        "일처리가 매우 빠르고 정확하다",
-                        "타인의 어려움을 즉시 돕다",
-                        "장기적인 안목으로 계획을 세우다"
-                    ],
-                    answer: 0,
-                    explanation: "'急功近利(jígōngjìnlì)'는 장래의 넓은 그림을 보지 못한 채 당장의 지엽적인 성과나 이득에만 집착하여 조급히 구는 부정적인 태도를 이릅니다."
-                },
-                {
-                    level: "HSK 6",
-                    question: "다음 중 '재앙이나 폐해를 없애다'를 뜻하는 동빈 결합은?",
-                    pinyin: "xiāochú huòhuàn",
-                    options: ["消除祸患", "解决冲突", "打破僵局", "克制情绪"],
-                    answer: 0,
-                    explanation: "위험한 싹수나 우환거리를 완전히 소거해 버린다는 조합은 '消除祸患(xiāochú huòhuàn)'입니다. '打破僵局'는 꽉 막힌 정체 국면(교착상태)을 깬다입니다."
-                },
-                {
-                    level: "HSK 6",
-                    question: "문맥상 빈칸에 어울리는 부사는?\n'他平日沉默寡言，今天 ( ) 滔滔不绝。' (그는 평소에는 말수가 적은데, 오늘따라 유독 말을 쏟아낸다.)",
-                    pinyin: "tā píngrì chénmò guǎyán, jīntiān ( ) tāotāo bùjué.",
-                    options: ["反倒", "本以为", "甚至", "索性"],
-                    answer: 0,
-                    explanation: "기존의 전제와 대립하여 의외의 양상으로 흘러가는 상황을 나타내는 역접 부사는 '反倒(fǎndào, 오히려/반대로)'입니다."
-                },
-                {
-                    level: "HSK 6",
-                    question: "다음 사자성어의 뜻은?\n'因地制宜'",
-                    pinyin: "yīndì zhìyí",
-                    options: [
-                        "각 지역의 실정에 맞게 적절한 조치를 취하다",
-                        "자기 뜻대로 마음대로 처리하다",
-                        "규정을 철저하게 준수하다",
-                        "환경오염을 초래하다"
-                    ],
-                    answer: 0,
-                    explanation: "'因地制宜(yīndìzhìyí)'는 특정 지역이나 장소의 고유 실정과 특성에 기반하여 그에 어울리는 대안을 수립한다는 행정 성격의 고급 어휘입니다."
-                },
-                {
-                    level: "HSK 6",
-                    question: "서면어(书面语) 중 '이에 근거하여, 이로 인하여'를 뜻하는 단어는?",
-                    pinyin: "yǐncǐ / yóucǐ",
-                    options: ["由此", "从而", "进而", "甚至"],
-                    answer: 0,
-                    explanation: "'여기서 출발하여', '이 사실을 바탕으로 미루어 볼 때'를 선언하는 인과 접속 부사는 '由此(yóucǐ)'입니다. '从而(cóng'ér)'는 수단과 결과(따라서)입니다."
-                },
-                {
-                    level: "HSK 6",
-                    question: "다음 중 '잠재력을 발굴하다'에 알맞은 호응 동사는?\n'( ) 潜力'",
-                    pinyin: "( ) qiánlì",
-                    options: ["挖掘", "开发", "培养", "扩大"],
-                    answer: 0,
-                    explanation: "깊은 지하에 묻힌 금광을 파내듯이 내재된 가능성이나 힘을 이끌어 낼 때는 동사 '挖掘(wājué, 발굴하다)'을 연결하여 '挖掘潜力'로 나타냅니다."
-                },
-                {
-                    level: "HSK 6",
-                    question: "다음 사자성어의 뜻은?\n'深谋远虑'",
-                    pinyin: "shēnmóu yuǎnlǜ",
-                    options: [
-                        "깊이 생각하고 멀리 바라보며 신중히 계획하다",
-                        "우유부단하여 아무것도 결정하지 못하다",
-                        "눈앞의 작은 일에만 사로잡혀 있다",
-                        "남을 음해하려는 음흉한 모사를 꾸미다"
-                    ],
-                    answer: 0,
-                    explanation: "'深谋远虑(shēnmóuyuǎnlǜ)'는 사려가 극도로 깊고 장래의 국면까지 통찰력 있게 설계하여 일을 시작하는 지혜로운 계책을 수식합니다."
-                },
-                {
-                    level: "HSK 6",
-                    question: "다음 빈칸에 들어갈 접속사는?\n'这不仅是一次挑战，( ) 是一次难得의机遇。' (이것은 단순한 도전일 뿐만 아니라, 얻기 어려운 기회이기도 하다.)",
-                    pinyin: "zhè bùjǐn shì yí cì tiǎozhàn, ( ) shì yí cì nándé de jīyù.",
-                    options: ["同时", "反而", "甚至", "更"],
-                    answer: 3,
-                    explanation: "점진적이고 더 심화된 논리를 더해주는 점층 관계 접속사 공식 '不仅/不但...更/而且...(~뿐만 아니라 한걸음 더 나아가 ...이다)'에 의해 부사 '更(gèng)'이 빈칸에 어울립니다."
-                },
-                {
-                    level: "HSK 6",
-                    question: "다음 중 '상반되다' 혹은 '서로 배치되다'를 의미하는 동사는?",
-                    pinyin: "xiāngbèi",
-                    options: ["相背", "相仿", "相对", "相近"],
-                    answer: 0,
-                    explanation: "서로 등을 지고 어긋나 어긋나며 모순을 빚는 동사는 '相背(xiāngbèi)'입니다. '相仿(xiāngfǎng)'은 비슷하다, '相对(xiāngduì)'는 대면하다/상대적이다를 의미합니다."
-                },
-                {
-                    level: "HSK 6",
-                    question: "다음 사자성어의 뜻은?\n'循序渐进'",
-                    pinyin: "xúnxù jiànjìn",
-                    options: [
-                        "순서에 따라 점진적으로 나아가다",
-                        "한 번에 급격히 단계를 뛰어넘다",
-                        "과거의 방식을 맹목적으로 따르다",
-                        "일을 계획 없이 대충 처리하다"
-                    ],
-                    answer: 0,
-                    explanation: "'循序渐进(xúnxùjiànjìn)'은 단계를 건너뛰지 않고 주어진 스텝에 근거하여 꾸준히 앞으로 순서대로 단련하며 올라간다는 교육 어휘입니다."
-                }
-            ]
-        };
+    <!-- Toggle Buttons -->
+    <div class="controls">
+      <button class="btn" id="nextBtn">
+        <span>다음 부수 보기</span>
+        <span class="btn-icon">→</span>
+      </button>
+    </div>
+  </div>
 
-        // EVALUATION LOGIC PER TEST LEVEL (Structured with Comment and Roadmap)
-        const evaluationLogic = {
-            hsk12: [
-                { 
-                    min: 0, max: 5, 
-                    title: "입문 및 HSK 1급 하위", 
-                    comment: "중국어 한어병음과 기본적인 4개 성조에 대한 체계적인 정리가 필요합니다. 한자의 기본 획수와 기초 명사 암기가 시작 단계에 놓여 있습니다.",
-                    roadmap: "한자 암기와 발음 병행 연습을 추천합니다. 매일 5개씩 필수 HSK 1급 단어를 듣고 말하며 병음을 직접 적어보는 트레이닝을 진행하세요."
-                },
-                { 
-                    min: 6, max: 12, 
-                    title: "실용 HSK 1급 상위", 
-                    comment: "일상적인 질문에 단어 위주로 간단히 의사를 표명할 수 있습니다. 단문 위주의 읽기가 가능하나, 성조 변형이나 부사의 위치 설정에 실수가 잦은 편입니다.",
-                    roadmap: "주어+술어+목적어로 이어지는 기초 어순 확립에 주력하세요. 원어민 음성을 따라 읽는 쉐도잉 학습과 간단한 생활 대화문 통암기가 효과적입니다."
-                },
-                { 
-                    min: 13, max: 20, 
-                    title: "HSK 2급 완비 단계", 
-                    comment: "쇼핑, 대중교통 등 일상적인 상황에서 짧은 대화를 원활히 주고받을 수 있습니다. 기본적인 동사 보어의 형태나 부정 부사(不, 没)의 구분이 잘 잡혀 있습니다.",
-                    roadmap: "곧바로 HSK 3급 어법 체계로 진입하십시오. 3급에서 다루는 풍부한 형용사와 동작 표현을 익히고, 복문 접속사 연결 연습을 병행하면 실력이 빠르게 상승합니다."
-                }
-            ],
-            hsk34: [
-                { 
-                    min: 0, max: 6, 
-                    title: "HSK 3급 입문", 
-                    comment: "초급 한자 표현과 기본 회화는 가능하나, 문장이 길어질 때 술어 뒤에 붙는 보어(결과, 방향) 구조와 부사 조사의 배치가 매끄럽지 않은 경향을 보입니다.",
-                    roadmap: "HSK 3급 빈출 형용사와 동사를 집중적으로 외우세요. 비교문과 존현문 같은 기초 어순 공식을 암기장이나 퀴즈를 통해 매일 반복 정비하는 것을 제안합니다."
-                },
-                { 
-                    min: 7, max: 13, 
-                    title: "HSK 3급 안정권", 
-                    comment: "자연스러운 중국 여행과 개인 일상 공유가 충분히 가능한 어휘력입니다. 어법 기본기는 튼튼하나, 4급 수준의 추상 명사나 다의어 구별에서 일부 오답이 발생합니다.",
-                    roadmap: "기초 회화를 넘어 신문 기사 조각이나 짧은 시사 지문을 정독하기 시작하세요. HSK 4급 쓰기 영역을 대비하여 직접 문장을 작문하고 첨삭 받는 피드백 과정을 추천합니다."
-                },
-                { 
-                    min: 14, max: 20, 
-                    title: "HSK 4급 완성 단계", 
-                    comment: "토론이나 특정 주제에 관해 기승전결이 있는 3~4개 문장 연속 진술이 가능합니다. 특수 구문(把자문, 被자문)도 정확한 어순으로 영위할 줄 아는 단계입니다.",
-                    roadmap: "비즈니스 지문과 설명문 중심의 5급 고급 읽기 능력을 배양해야 합니다. 고급 어휘의 올바른 짝꿍 표현(搭配) 리스트를 암기하며 작문의 정교함을 한층 끌어올리세요."
-                }
-            ],
-            hsk5: [
-                { 
-                    min: 0, max: 6, 
-                    title: "HSK 5급 하 (어휘 보완 필요)", 
-                    comment: "중급 중국어를 넘어 고급 표현으로 진입하는 단계이나, 단어의 세부 뉘앙스 차이(유의어 구분)나 긴 지문 내 핵심 문맥을 신속히 찾는 속독 능력이 부족합니다.",
-                    roadmap: "5급 기출 핵심 유의어 100쌍 비교 자료집을 정독하는 것을 최우선으로 하세요. 긴 지문의 문단별 요약 문장을 직접 한 문장으로 간추려 쓰는 훈련이 좋습니다."
-                },
-                { 
-                    min: 7, max: 13, 
-                    title: "HSK 5급 중 (독해 다지기)", 
-                    comment: "설명문과 논설문의 주제 파악이 양호하며 탄탄한 문법 지식을 갖고 있습니다. 다만, 사회·과학·비즈니스 시사 용어가 복합적으로 출현할 때 어법 구조 파악에 지연이 있습니다.",
-                    roadmap: "시간 배분 훈련이 시급합니다. 매일 3~4개의 5급 독해 지문을 타이머를 켜고 푸는 연습을 하고, 오답 문장은 왜 틀렸는지 접속사 호응 관계를 기준으로 형광펜 정리하는 공부법이 유효합니다."
-                },
-                { 
-                    min: 14, max: 20, 
-                    title: "HSK 5급 상 (6급 도전 가능)", 
-                    comment: "문장의 논리 구조와 단어 매칭 능력이 우수하며 작문 시 문법적 오류가 거의 발견되지 않는 훌륭한 수준입니다. 모의고사 고득점 획득이 유력합니다.",
-                    roadmap: "주저 없이 HSK 6급 과정으로 넘어가십시오. 고급 서면어(书面语)와 시사 칼럼 정독을 병행하며, 400자 요약 쓰기 시험에 맞춘 요약 정리 원고지 작성을 주 1회씩 시작해 보세요."
-                }
-            ],
-            hsk6: [
-                { 
-                    min: 0, max: 6, 
-                    title: "HSK 6급 입문 (사자성어 강화 필요)", 
-                    comment: "6급 한자의 급격한 난이도 상승과 방대한 사자성어 분량에 적응이 더 필요한 상태입니다. 서면어 접속사와 부사의 섬세한 배치 실수가 다수 보입니다.",
-                    roadmap: "필수 고난도 사자성어 500개 표를 매일 소리 내어 읽고 암기하세요. 긴 수필이나 역사 지문을 단어 위주가 아닌 이야기 구조의 흐름으로 요약하는 직독직해 근육을 길러야 합니다."
-                },
-                { 
-                    min: 7, max: 13, 
-                    title: "HSK 6급 중 (어문 교정 및 병구 강화)", 
-                    comment: "어려운 시사 경제 논평 분석이나 복잡한 중국 문화 역사 텍스트에 대한 전반적 해독 능력이 좋습니다. 다만, 미묘한 어순 배치나 조사 중복 등 오류 문장(病句) 변별력이 2% 아쉽습니다.",
-                    roadmap: "오류 문장 찾기 파트의 10대 유형 공식을 분석하세요. 기출문제 분석 시 올바른 문장 구조와 오류 문장 구조를 양쪽에 적어 눈으로 패턴을 외우는 오답 노트 작성이 최적의 해법입니다."
-                },
-                { 
-                    min: 14, max: 20, 
-                    title: "HSK 6급 상 (최상위 완성)", 
-                    comment: "한어 원어민에 근접한 정교한 구조 변별력과 논리적 서면어 이해력을 완벽히 구비하고 있습니다. 학술 평론이나 고난도 설명문에도 논거를 파악해 낼 수 있는 완성형 실력입니다.",
-                    roadmap: "실무 비즈니스 통번역 입문 과정이나 고급 한중 작문 훈련을 통해 실전 고급 커뮤니케이션 능력을 발휘하세요. 매일 중국 시사 헤드라인을 한국어로 즉각 구두 번역하는 실습도 훌륭합니다."
-                }
-            ]
-        };
+  <script>
+    // Data definition for Radicals and corresponding words (10 types total, HSK 3-4)
+    const learningData = [
+      {
+        radical: "亻",
+        meaning: "사람 (사람 인)",
+        desc: "사람의 모습을 본뜬 부수로, 주로 사람의 행동, 관계, 신체 상태나 성질과 관련된 한자에 쓰입니다.",
+        words: [
+          { hanzi: "休", radicalIdx: 0, pinyin: "xiū", korean: "쉬다", level: "3급 수준", explain: "사람(亻)이 나무(木) 옆에서 쉬는 모습" },
+          { hanzi: "住", radicalIdx: 0, pinyin: "zhù", korean: "살다, 머무르다", level: "3급 수준", explain: "사람(亻)이 한곳에 주인(主)처럼 정착해 머무는 것" },
+          { hanzi: "信", radicalIdx: 0, pinyin: "xìn", korean: "믿다, 편지", level: "3급 수준", explain: "사람(亻)의 말(言)은 신뢰할 수 있어야 하므로 '믿다'" },
+          { hanzi: "体", radicalIdx: 0, pinyin: "tǐ", korean: "몸, 신체", level: "3급 수준", explain: "사람(亻)의 몸 근본(本)을 뜻함" },
+          { hanzi: "价", radicalIdx: 0, pinyin: "jià", korean: "값, 가격", level: "3급 수준", explain: "사람(亻)들이 중개(介)하여 물건 값을 정함" },
+          { hanzi: "位", radicalIdx: 0, pinyin: "wèi", korean: "자리, 지위", level: "3급 수준", explain: "사람(亻)이 서(立) 있는 자리를 가리킴" }
+        ]
+      },
+      {
+        radical: "氵",
+        meaning: "물 (삼수 변)",
+        desc: "물(水)의 흐름을 본뜬 부수로, 주로 물과의 관련, 수체 상태 등을 표현합니다.",
+        words: [
+          { hanzi: "河", radicalIdx: 0, pinyin: "hé", korean: "강, 하천", level: "3급 수준", explain: "물(氵)이 흐르며 크고 크게 소리(可)내는 강" },
+          { hanzi: "海", radicalIdx: 0, pinyin: "hǎi", korean: "바다", level: "3급 수준", explain: "모든 물(氵)이 매일(每) 모여드는 거대한 바다" },
+          { hanzi: "湖", radicalIdx: 0, pinyin: "hú", korean: "호수", level: "4급 수준", explain: "물(氵)이 모여 오랑캐(胡) 땅처럼 넓고 넓은 고요한 호수" },
+          { hanzi: "江", radicalIdx: 0, pinyin: "jiāng", korean: "강", level: "4급 수준", explain: "물(氵)이 길게 흐르는 큰(工) 강" },
+          { hanzi: "洗", radicalIdx: 0, pinyin: "xǐ", korean: "씻다", level: "3급 수준", explain: "물(氵)을 이용해 발을 내딛기 전에 먼저(先) 씻음" },
+          { hanzi: "清", radicalIdx: 0, pinyin: "qīng", korean: "맑다, 깨끗하다", level: "4급 수준", explain: "푸를 청(青)처럼 푸르고 맑은 물(氵)의 상태" }
+        ]
+      },
+      {
+        radical: "口",
+        meaning: "입 (입 구)",
+        desc: "사람의 벌린 입 모양을 본뜬 부수로, 말하기, 먹기, 소리 내기 등과 관련이 있습니다.",
+        words: [
+          { hanzi: "吃", radicalIdx: 0, pinyin: "chī", korean: "먹다", level: "3급 수준", explain: "입(口)을 빌려 기운(乞)을 얻기 위해 음식을 먹음" },
+          { hanzi: "喝", radicalIdx: 0, pinyin: "hē", korean: "마시다", level: "3급 수준", explain: "입(口)으로 목마름을 꾸짖듯(曷) 급히 물을 마심" },
+          { hanzi: "叫", radicalIdx: 0, pinyin: "jiào", korean: "부르다, 외치다", level: "3급 수준", explain: "입(口)으로 얽힌(丩) 사람을 소리쳐 부름" },
+          { hanzi: "听", radicalIdx: 0, pinyin: "tīng", korean: "듣다", level: "3급 수준", explain: "입(口)을 모아 도끼(斤) 날처럼 날카롭게 주의해 들음" },
+          { hanzi: "喊", radicalIdx: 0, pinyin: "hǎn", korean: "외치다, 소리치다", level: "4급 수준", explain: "입(口)으로 다함께(咸) 큰 소리로 외치다" },
+          { hanzi: "唱", radicalIdx: 0, pinyin: "chàng", korean: "노래하다", level: "3급 수준", explain: "입(口)으로 햇볕이 번지듯(昌) 아름답게 노래함" }
+        ]
+      },
+      {
+        radical: "辶",
+        meaning: "쉬엄쉬엄 갈 (책받침)",
+        desc: "길을 걷거나 나아가고, 이동이나 도로 등과 관련되어 쓰입니다.",
+        words: [
+          { hanzi: "送", radicalIdx: 0, pinyin: "sòng", korean: "보내다, 배웅하다", level: "3급 수준", explain: "들고(关) 가던 물건을 다른 곳으로 보내다(辶)" },
+          { hanzi: "迎", radicalIdx: 0, pinyin: "yíng", korean: "맞이하다, 환영하다", level: "4급 수준", explain: "나를 우러러보는(卬) 사람을 마중 나아가다(辶)" },
+          { hanzi: "运", radicalIdx: 0, pinyin: "yùn", korean: "운반하다, 운수", level: "3급 수준", explain: "구름(云)처럼 멀리 흘러 이동하다(辶)" },
+          { hanzi: "迟", radicalIdx: 0, pinyin: "chí", korean: "늦다, 지체되다", level: "4급 수준", explain: "코뿔소(尺)처럼 걸음이 느려 늦게 가다(辶)" },
+          { hanzi: "逃", radicalIdx: 0, pinyin: "táo", korean: "도망치다", level: "4급 수준", explain: "조짐(兆)을 눈치채고 빠르게 도망치다(辶)" },
+          { hanzi: "透", radicalIdx: 0, pinyin: "tòu", korean: "통과하다, 스며들다", level: "4급 수준", explain: "빼어난(秀) 솜씨로 막힘없이 꿰뚫고 가다(辶)" }
+        ]
+      },
+      {
+        radical: "忄",
+        meaning: "마음 (심방 변)",
+        desc: "사람의 감정, 생각, 심리 상태와 관련이 깊습니다.",
+        words: [
+          { hanzi: "忙", radicalIdx: 0, pinyin: "máng", korean: "바쁘다", level: "3급 수준", explain: "바쁘면 마음(忄)이 망할(망) 정도로 경황이 없음" },
+          { hanzi: "怕", radicalIdx: 0, pinyin: "pà", korean: "두려워하다, 무섭다", level: "3급 수준", explain: "두려우면 마음(忄)이 하얗게(백) 질림" },
+          { hanzi: "懂", radicalIdx: 0, pinyin: "dǒng", korean: "이해하다, 알다", level: "3급 수준", explain: "마음(忄)속에 이치를 똑바로(동) 세워 이해함" },
+          { hanzi: "怪", radicalIdx: 0, pinyin: "guài", korean: "이상하다, 괴상하다", level: "4급 수준", explain: "마음(忄)속에 흙더미(성)처럼 기이한 의심이 솟음" },
+          { hanzi: "懒", radicalIdx: 0, pinyin: "lǎn", korean: "게으르다", level: "4급 수준", explain: "마음(忄)이 의뢰(뢰)하고만 싶어 행동이 느려짐" },
+          { hanzi: "恨", radicalIdx: 0, pinyin: "hèn", korean: "미워하다, 한탄하다", level: "4급 수준", explain: "마음(忄)이 어긋나고 그쳐(간) 미워하는 마음이 생김" }
+        ]
+      },
+      {
+        radical: "艹",
+        meaning: "풀 (초두머리)",
+        desc: "풀이나 꽃, 채소 등 식물과 관련된 한자에 쓰이는 부수입니다.",
+        words: [
+          { hanzi: "草", radicalIdx: 0, pinyin: "cǎo", korean: "풀", level: "3급 수준", explain: "이른 아침 해(조)를 받고 쑥쑥 자라는 풀(艹)" },
+          { hanzi: "花", radicalIdx: 0, pinyin: "huā", korean: "꽃", level: "3급 수준", explain: "풀(艹)에서 피어나 변화(화)하며 피어나는 아름다운 꽃" },
+          { hanzi: "茶", radicalIdx: 0, pinyin: "chá", korean: "차(마시는 차)", level: "3급 수준", explain: "나무(목)와 풀(艹) 사이에서 사람이 따는 차나무 잎" },
+          { hanzi: "菜", radicalIdx: 0, pinyin: "cài", korean: "채소, 요리", level: "3급 수준", explain: "손(채)으로 나무와 풀(艹)에서 뜯어낸 나물과 채소" },
+          { hanzi: "药", radicalIdx: 0, pinyin: "yào", korean: "약", level: "3급 수준", explain: "먹으면 몸을 즐겁게(락) 해주는 약초 풀(艹)" },
+          { hanzi: "蓝", radicalIdx: 0, pinyin: "lán", korean: "파랗다", level: "3급 수준", explain: "쪽풀(艹)에서 우려낸 빛깔이 그릇(명)에 담긴 푸른색" }
+        ]
+      },
+      {
+        radical: "饣",
+        meaning: "먹을 (식판 변)",
+        desc: "음식물, 먹는 행위 등과 밀접한 연관이 있습니다.",
+        words: [
+          { hanzi: "饱", radicalIdx: 0, pinyin: "bǎo", korean: "배부르다", level: "3급 수준", explain: "음식(饣)을 싸안을(포) 만큼 넉넉하게 먹어 배부름" },
+          { hanzi: "饿", radicalIdx: 0, pinyin: "è", korean: "배고프다", level: "3급 수준", explain: "나(아)에게 줄 음식(饣)이 없어 배가 고프다" },
+          { hanzi: "饺", radicalIdx: 0, pinyin: "jiǎo", korean: "만두", level: "4급 수준", explain: "밀가루 피로 음식(饣)을 교차(교)하여 빚어낸 만두" },
+          { hanzi: "馆", radicalIdx: 0, pinyin: "guǎn", korean: "관(도서관, 여관 등)", level: "3급 수준", explain: "음식(饣)과 잠자리를 갖추어 관원(관)들이 묵던 곳" },
+          { hanzi: "饼", radicalIdx: 0, pinyin: "bǐng", korean: "밀가루 떡, 빵", level: "4급 수준", explain: "곡식을 아울러(병) 반죽해 구운 밀가루 음식(饣)" },
+          { hanzi: "饮", radicalIdx: 0, pinyin: "yǐn", korean: "마시다", level: "4급 수준", explain: "하품하듯(흠) 입을 벌려 마실 거리(饣)를 삼킴" }
+        ]
+      },
+      {
+        radical: "木",
+        meaning: "나무 (나무 목)",
+        desc: "나무의 종류, 나무로 만든 도구 및 가구 등과 밀접합니다.",
+        words: [
+          { hanzi: "杯", radicalIdx: 0, pinyin: "bēi", korean: "잔, 컵", level: "3급 수준", explain: "옛날에 나무(木)로 만들어 쓰던 잔(부정할 부의 소리)" },
+          { hanzi: "板", radicalIdx: 0, pinyin: "bǎn", korean: "판자, 칠판", level: "4급 수준", explain: "나무(木)를 넓고 편평하게(반) 켠 판자" },
+          { hanzi: "极", radicalIdx: 0, pinyin: "jí", korean: "매우, 극도", level: "3급 수준", explain: "지붕의 대들보 나무(木)처럼 가장 높은 꼭대기(급)" },
+          { hanzi: "桥", radicalIdx: 0, pinyin: "qiáo", korean: "다리(교량)", level: "4급 수준", explain: "높고 굽어지게(교) 나무(木)로 높이 가설한 다리" },
+          { hanzi: "校", radicalIdx: 0, pinyin: "xiào", korean: "학교", level: "3급 수준", explain: "사람들이 사귀고(교) 나무(木) 그늘처럼 모여 배우는 곳" },
+          { hanzi: "检", radicalIdx: 0, pinyin: "jiǎn", korean: "검사하다, 조사하다", level: "4급 수준", explain: "나무(木) 상자에 다함께(검) 담아 맞는지 확인하다" }
+        ]
+      },
+      {
+        radical: "纟",
+        meaning: "실 (실사 변)",
+        desc: "실, 옷감, 끈 또는 연결되거나 묶는 의미를 지닙니다.",
+        words: [
+          { hanzi: "红", radicalIdx: 0, pinyin: "hóng", korean: "붉다", level: "3급 수준", explain: "장인(공)이 실(纟)에 붉은 물을 들인 것" },
+          { hanzi: "绿", radicalIdx: 0, pinyin: "lǜ", korean: "초록색", level: "3급 수준", explain: "물(록)에서 채취한 염료로 실(纟)에 물들인 초록색" },
+          { hanzi: "给", radicalIdx: 0, pinyin: "gěi", korean: "주다, ~에게", level: "3급 수준", explain: "합당하게(합) 실(纟)을 이어서 가난한 이에게 대주다" },
+          { hanzi: "终", radicalIdx: 0, pinyin: "zhōng", korean: "마치다, 끝내다", level: "4급 수준", explain: "겨울(동)이 오듯 실(纟) 타래의 맨 끝을 매듭짓다" },
+          { hanzi: "练", radicalIdx: 0, pinyin: "liàn", korean: "연습하다, 단련하다", level: "3급 수준", explain: "날것의 생사 실(纟)을 잘 가려(간) 부드럽게 익히다" },
+          { hanzi: "结", radicalIdx: 0, pinyin: "jié", korean: "맺다, 묶다", level: "4급 수준", explain: "선비(길)들이 약속하고 계약의 실(纟)을 단단히 묶다" }
+        ]
+      },
+      {
+        radical: "女",
+        meaning: "여자 (여자 여)",
+        desc: "여성, 혼인, 친족 명칭 및 감정이나 성질에 쓰입니다.",
+        words: [
+          { hanzi: "奶", radicalIdx: 0, pinyin: "nǎi", korean: "할머니, 젖", level: "3급 수준", explain: "집안에서 나(내)를 품어 기르시는 어머니 혹은 할머니(女)" },
+          { hanzi: "姨", radicalIdx: 0, pinyin: "yí", korean: "이모", level: "4급 수준", explain: "오랑캐 이(이)와 여인(女)이 결합된 친족 이모" },
+          { hanzi: "婚", radicalIdx: 0, pinyin: "hūn", korean: "결혼하다", level: "4급 수준", explain: "어두울 때(혼)에 예식을 올리던 신부(女)" },
+          { hanzi: "始", radicalIdx: 0, pinyin: "shǐ", korean: "시작하다", level: "3급 수준", explain: "태아를 품은 여성(女)의 자궁 구(태)에서 생명이 시작함" },
+          { hanzi: "姐", radicalIdx: 0, pinyin: "jiě", korean: "누나, 언니", level: "3급 수준", explain: "가족 중 조상(且)처럼 동생들을 돌보는 손위 여자(女)" },
+          { hanzi: "妹", radicalIdx: 0, pinyin: "mèi", korean: "여동생", level: "3급 수준", explain: "아직 성숙하지 못해 아닐 미(未) 자를 쓰는 어린 여자(女)" }
+        ]
+      },
+      {
+        radical: "土",
+        meaning: "흙 (흙 토)",
+        desc: "흙이나 대지, 진흙, 건축물이나 토지와 관련된 한자에 쓰이는 부수입니다.",
+        words: [
+          { hanzi: "地", radicalIdx: 0, pinyin: "dì", korean: "땅, 지구", level: "3급 수준", explain: "흙(土)과 뱀(也)이 기어 다니는 넓은 땅" },
+          { hanzi: "坏", radicalIdx: 0, pinyin: "huài", korean: "나쁘다, 고장나다", level: "3급 수준", explain: "흙(土)으로 만든 벽에 틈(不)이 생겨 무너지거나 망가짐" },
+          { hanzi: "城", radicalIdx: 0, pinyin: "chéng", korean: "성, 도시", level: "4급 수준", explain: "흙(土)으로 만든 벽을 이루어(成) 세운 성벽" },
+          { hanzi: "堵", radicalIdx: 0, pinyin: "dǔ", korean: "막히다, 밀리다", level: "4급 수준", explain: "흙(土)더미로 놈(者)들이 길을 가로막음" },
+          { hanzi: "增", radicalIdx: 0, pinyin: "zēng", korean: "증가하다, 더하다", level: "4급 수준", explain: "흙(土)을 겹겹이 거듭(曾) 쌓아 올려 늘리다" },
+          { hanzi: "垃", radicalIdx: 0, pinyin: "lā", korean: "쓰레기(垃圾)", level: "3급 수준", explain: "흙(土)에 버려 함께 묻는(立) 쓰레기" }
+        ]
+      },
+      {
+        radical: "门",
+        meaning: "문 (문 문)",
+        desc: "출입하는 문짝의 모양을 본뜬 부수로, 통로, 폐쇄, 방의 구획 등과 연관이 있습니다.",
+        words: [
+          { hanzi: "问", radicalIdx: 0, pinyin: "wèn", korean: "묻다, 질문하다", level: "3급 수준", explain: "문(门)에 다가가 입(口)을 벌려 길을 묻다" },
+          { hanzi: "间", radicalIdx: 0, pinyin: "jiān", korean: "방, 사이", level: "3급 수준", explain: "문(门) 틈 사이로 새어 나오는 햇빛(日)" },
+          { hanzi: "闭", radicalIdx: 0, pinyin: "bì", korean: "닫다", level: "4급 수준", explain: "문(门)에 빗장(才)을 걸어 잠그고 닫다" },
+          { hanzi: "阅", radicalIdx: 0, pinyin: "yuè", korean: "읽다, 검열하다", level: "4급 수준", explain: "문(门) 안에서 예법(兑)에 맞게 글을 읽거나 살핌" },
+          { hanzi: "闷", radicalIdx: 0, pinyin: "mèn", korean: "답답하다, 우울하다", level: "4급 수준", explain: "마음(心)이 좁은 문(门) 안에 갇혀 답답함" },
+          { hanzi: "闲", radicalIdx: 0, pinyin: "xián", korean: "한가하다", level: "4급 수준", explain: "문(门)에 기대어 뜰의 나무(木)를 바라보며 쉬다" }
+        ]
+      },
+      {
+        radical: "日",
+        meaning: "날, 해 (날 일)",
+        desc: "둥근 해의 모양을 본뜬 부수로, 하루, 시간, 날씨, 빛과 밝기 등과 관련이 있습니다.",
+        words: [
+          { hanzi: "晴", radicalIdx: 0, pinyin: "qíng", korean: "개다, 맑다", level: "3급 수준", explain: "해(日)가 떠서 하늘이 푸르게(青) 개인 날씨" },
+          { hanzi: "明", radicalIdx: 0, pinyin: "míng", korean: "밝다, 내일", level: "3급 수준", explain: "해(日)와 달(月)이 함께 비추니 매우 밝음" },
+          { hanzi: "暗", radicalIdx: 0, pinyin: "àn", korean: "어둡다, 은밀하다", level: "4급 수준", explain: "해(日)가 지고 소리(音)만 들릴 정도로 어두워짐" },
+          { hanzi: "暖", radicalIdx: 0, pinyin: "nuǎn", korean: "따뜻하다", level: "4급 수준", explain: "해(日)가 내리쬐어 사람(爰)의 몸이 따뜻해짐" },
+          { hanzi: "昨", radicalIdx: 0, pinyin: "zuó", korean: "어제", level: "3급 수준", explain: "해(日)가 잠깐(乍) 사이에 지나가 버린 어제" },
+          { hanzi: "晨", radicalIdx: 0, pinyin: "chén", korean: "새벽, 아침", level: "4급 수준", explain: "해(日)가 뜰 때 별(辰)들이 지는 이른 아침" }
+        ]
+      },
+      {
+        radical: "疒",
+        meaning: "병 (병질 엄)",
+        desc: "침대에 누워 앓고 있는 사람의 모습을 본뜬 부수로, 질병, 통증, 신체 이상과 관련이 깊습니다.",
+        words: [
+          { hanzi: "病", radicalIdx: 0, pinyin: "bìng", korean: "병, 아프다", level: "3급 수준", explain: "병상(疒)에 누워 앓는 남녘(丙) 사람의 질병" },
+          { hanzi: "疼", radicalIdx: 0, pinyin: "téng", korean: "아프다", level: "3급 수준", explain: "겨울(冬)철 추위에 몸이 아파(疒) 욱신거림" },
+          { hanzi: "痛", radicalIdx: 0, pinyin: "tòng", korean: "아프다, 아픔", level: "4급 수준", explain: "병(疒)이 들어 길을 통(勇->通)할 수 없을 정도로 고통스러움" },
+          { hanzi: "瘦", radicalIdx: 0, pinyin: "shòu", korean: "마르다", level: "3급 수준", explain: "병(疒)이나 노화로 인해 늙은이(叟)처럼 몸이 야위고 마름" },
+          { hanzi: "疯", radicalIdx: 0, pinyin: "fēng", korean: "미치다, 광적인", level: "4급 수준", explain: "바람(风)이 들듯 뇌에 병(疒)이 생겨 미치다" },
+          { hanzi: "痒", radicalIdx: 0, pinyin: "yǎng", korean: "가렵다", level: "4급 수준", explain: "양(羊)떼처럼 스멀스멀 기어가며 앓는(疒) 가려움" }
+        ]
+      },
+      {
+        radical: "钅",
+        meaning: "쇠, 돈 (쇠 금)",
+        desc: "흙속의 광물과 제련된 단단한 금속을 본뜬 부수로, 광물, 돈, 날카로운 도구 등과 관련됩니다.",
+        words: [
+          { hanzi: "钱", radicalIdx: 0, pinyin: "qián", korean: "돈", level: "3급 수준", explain: "쇠(钅)로 만든 농기구(戔)가 화폐로 변함" },
+          { hanzi: "铁", radicalIdx: 0, pinyin: "tiě", korean: "철, 무쇠", level: "4급 수준", explain: "금속(钅) 중에서 가장 곧고 잃지(失) 않는 튼튼한 무쇠" },
+          { hanzi: "铅", radicalIdx: 0, pinyin: "qiān", korean: "납(연필심)", level: "3급 수준", explain: "부드러운 금속(钅)으로 늪(沿)처럼 잘 녹아 스며드는 납" },
+          { hanzi: "镜", radicalIdx: 0, pinyin: "jìng", korean: "거울, 안경", level: "4급 수준", explain: "구리 금속(钅)을 빛나고 마칠(竟) 때까지 닦아 만든 거울" },
+          { hanzi: "银", radicalIdx: 0, pinyin: "yín", korean: "은", level: "3급 수준", explain: "금속(钅) 중에서 금 다음으로 그쳐(艮) 빛나는 은" },
+          { hanzi: "钥", radicalIdx: 0, pinyin: "yào", korean: "열쇠, 자물쇠 고리", level: "4급 수준", explain: "쇠(钅)로 빗장을 질러 문을 잠그거나 여는(月) 데 쓰는 열쇠" }
+        ]
+      }
+    ];
 
-        // State variables
-        let selectedTestLevel = 'hsk12'; // Default
-        let currentQuestionIndex = 0;
-        let selectedOption = null;
-        let userAnswers = []; 
-        let studentInfo = { name: '', age: '', phone: '' };
-        let activeQuestionsList = [];
+    let currentIndex = 0;
 
-        // DOM elements
-        const startScreen = document.getElementById('start-screen');
-        const quizScreen = document.getElementById('quiz-screen');
-        const resultScreen = document.getElementById('result-screen');
+    const radicalCard = document.getElementById("radicalCard");
+    const radicalChar = document.getElementById("radicalChar");
+    const radicalMeaning = document.getElementById("radicalMeaning");
+    const radicalDesc = document.getElementById("radicalDesc");
+    const wordGrid = document.getElementById("wordGrid");
+    const nextBtn = document.getElementById("nextBtn");
+
+    // Renders the words for the current radical index
+    function renderContent(index) {
+      const data = learningData[index];
+      
+      // Update Radical Card Info
+      radicalChar.textContent = data.radical;
+      radicalMeaning.textContent = data.meaning;
+      radicalDesc.textContent = data.desc;
+
+      // Clear previous grid items
+      wordGrid.innerHTML = "";
+
+      // Build cards
+      data.words.forEach((word) => {
+        const card = document.createElement("div");
+        card.className = "flip-card";
+
+        // HTML elements to split Chinese character into parts
+        const hanziChar = word.hanzi;
+        let hanziHTML = "";
         
-        const inputName = document.getElementById('student-name');
-        const inputAge = document.getElementById('student-age');
-        const inputPhone = document.getElementById('student-phone');
-        const levelCards = document.querySelectorAll('.level-card');
-        
-        const btnStart = document.getElementById('btn-start');
-        const btnNext = document.getElementById('btn-next');
-        const btnRestart = document.getElementById('btn-restart');
-        const btnCopyReport = document.getElementById('btn-copy-report');
-        
-        const currentQNum = document.getElementById('current-q-num');
-        const progressBar = document.getElementById('progress-bar');
-        const qLevelMeta = document.getElementById('q-level-meta');
-        const qText = document.getElementById('q-text');
-        const qPinyin = document.getElementById('q-pinyin');
-        const optionsContainer = document.getElementById('options-container');
+        for (let i = 0; i < hanziChar.length; i++) {
+          if (i === word.radicalIdx) {
+            hanziHTML += `<span class="radical-highlight">${hanziChar[i]}</span>`;
+          } else {
+            hanziHTML += `<span class="remain-stroke">${hanziChar[i]}</span>`;
+          }
+        }
 
-        const resultStudentName = document.getElementById('result-student-name');
-        const resultBadgeLevel = document.getElementById('result-badge-level');
-        const totalScore = document.getElementById('total-score');
-        const hskTitle = document.getElementById('hsk-title');
-        const hskComment = document.getElementById('hsk-comment');
-        const hskRoadmap = document.getElementById('hsk-roadmap');
-        const reviewContent = document.getElementById('review-content');
-        const reviewIcon = document.getElementById('review-icon');
+        card.innerHTML = `
+          <div class="flip-card-inner">
+            <div class="card-front">
+              <div class="hanzi-display">${hanziHTML}</div>
+              <div class="card-level-badge">hsk3</div>
+            </div>
+            <div class="card-back">
+              <div class="pinyin-display">${word.pinyin}</div>
+              <div class="meaning-display">${word.korean}</div>
+              <div class="details-display">${word.explain}</div>
+              <button class="audio-btn" title="발음 듣기">
+                <svg viewBox="0 0 24 24">
+                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        `;
 
-        // Level selection click handler
-        levelCards.forEach(card => {
-            card.addEventListener('click', () => {
-                levelCards.forEach(c => c.classList.remove('selected'));
-                card.classList.add('selected');
-                selectedTestLevel = card.getAttribute('data-level');
-            });
+        // Touch support and click action
+        card.addEventListener("click", function(e) {
+          // Check if we are flipping it open (i.e. currently it does not have 'flipped' class, or we check toggle status)
+          const isFlippingOpen = !this.classList.contains("flipped");
+          this.classList.toggle("flipped");
+          
+          // Play pronunciation when flipping the card open
+          if (isFlippingOpen) {
+            speakHanzi(word.hanzi);
+          }
         });
 
-        // Initial setup & event listeners
-        btnStart.addEventListener('click', startQuiz);
-        btnNext.addEventListener('click', nextQuestion);
-        btnRestart.addEventListener('click', restartQuiz);
-        btnCopyReport.addEventListener('click', copyCounselingReport);
+        // Add speak handler (standalone button still works)
+        const audioBtn = card.querySelector(".audio-btn");
+        audioBtn.addEventListener("click", function(e) {
+          e.stopPropagation(); // prevent flipping when clicking the speaker
+          speakHanzi(word.hanzi);
+        });
 
-        function startQuiz() {
-            if (!inputName.value.trim()) {
-                alert('학생 이름을 입력해 주세요.');
-                inputName.focus();
-                return;
-            }
-            if (!inputAge.value.trim() || inputAge.value <= 0) {
-                alert('올바른 나이를 입력해 주세요.');
-                inputAge.focus();
-                return;
-            }
-            if (!inputPhone.value.trim()) {
-                alert('연락처를 입력해 주세요.');
-                inputPhone.focus();
-                return;
-            }
+        wordGrid.appendChild(card);
+      });
+    }
 
-            studentInfo.name = inputName.value.trim();
-            studentInfo.age = inputAge.value.trim();
-            studentInfo.phone = inputPhone.value.trim();
-            activeQuestionsList = questionDatabase[selectedTestLevel];
-
-            startScreen.classList.remove('active');
-            quizScreen.classList.add('active');
-            
-            currentQuestionIndex = 0;
-            userAnswers = [];
-            loadQuestion();
+    // TTS speaker helper (robust version)
+    function speakHanzi(text) {
+      if ('speechSynthesis' in window) {
+        // Force resume in case browser speechSynthesis is in a stuck/paused state
+        window.speechSynthesis.resume();
+        window.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'zh-CN'; 
+        utterance.rate = 0.8;    
+        utterance.volume = 1.0;  // Force full volume for the utterance
+        
+        // Find and assign explicit Chinese voice if loaded to prevent browser default fallback issues
+        const voices = window.speechSynthesis.getVoices();
+        const zhVoice = voices.find(voice => voice.lang.includes('zh') || voice.lang.includes('ZH'));
+        if (zhVoice) {
+          utterance.voice = zhVoice;
         }
+        
+        window.speechSynthesis.speak(utterance);
+      } else {
+        alert("이 브라우저는 음성 합성(TTS)을 지원하지 않습니다.");
+      }
+    }
 
-        function loadQuestion() {
-            const q = activeQuestionsList[currentQuestionIndex];
-            selectedOption = null;
-            btnNext.disabled = true;
+    // Pre-load voices on browser load to prevent cold-start delays
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+      }
+    }
 
-            currentQNum.textContent = `Q. ${String(currentQuestionIndex + 1).padStart(2, '0')} / 20`;
-            const progressPct = ((currentQuestionIndex + 1) / activeQuestionsList.length) * 100;
-            progressBar.style.width = `${progressPct}%`;
+    // Smooth transition animation when switching radicals
+    function handleTransition() {
+      // Fade out
+      radicalCard.classList.add("fade-out");
+      wordGrid.classList.add("fade-out");
 
-            qLevelMeta.textContent = q.level;
-            qText.textContent = q.question;
-            qPinyin.textContent = q.pinyin;
+      setTimeout(() => {
+        // Toggle index
+        currentIndex = (currentIndex + 1) % learningData.length;
+        renderContent(currentIndex);
 
-            optionsContainer.innerHTML = '';
-            q.options.forEach((opt, idx) => {
-                const optItem = document.createElement('button');
-                optItem.className = 'option-item';
-                optItem.innerHTML = `
-                    <div class="option-indicator">${String.fromCharCode(65 + idx)}</div>
-                    <div class="option-text">${opt}</div>
-                `;
-                optItem.addEventListener('click', () => selectOption(idx, optItem));
-                optionsContainer.appendChild(optItem);
-            });
-        }
+        // Fade in
+        radicalCard.classList.remove("fade-out");
+        wordGrid.classList.remove("fade-out");
+        
+        radicalCard.classList.add("fade-in");
+        wordGrid.classList.add("fade-in");
 
-        function selectOption(index, element) {
-            selectedOption = index;
-            const options = optionsContainer.querySelectorAll('.option-item');
-            options.forEach(item => item.classList.remove('selected'));
-            element.classList.add('selected');
-            btnNext.disabled = false;
-        }
+        setTimeout(() => {
+          radicalCard.classList.remove("fade-in");
+          wordGrid.classList.remove("fade-in");
+        }, 300);
+      }, 300);
+    }
 
-        function nextQuestion() {
-            userAnswers.push(selectedOption);
-            currentQuestionIndex++;
+    // Event listener for Next Button
+    nextBtn.addEventListener("click", handleTransition);
 
-            if (currentQuestionIndex < activeQuestionsList.length) {
-                loadQuestion();
-            } else {
-                showResults();
-            }
-        }
-
-        function showResults() {
-            quizScreen.classList.remove('active');
-            resultScreen.classList.add('active');
-
-            let score = 0;
-            userAnswers.forEach((ans, idx) => {
-                if (ans === activeQuestionsList[idx].answer) {
-                    score++;
-                }
-            });
-
-            resultStudentName.textContent = `${studentInfo.name} 님(${studentInfo.age}세)의 진단 결과`;
-            totalScore.textContent = score;
-
-            let levelLabel = "HSK 1~2급 과정";
-            if (selectedTestLevel === 'hsk34') levelLabel = "HSK 3~4급 과정";
-            if (selectedTestLevel === 'hsk5') levelLabel = "HSK 5급 과정";
-            if (selectedTestLevel === 'hsk6') levelLabel = "HSK 6급 과정";
-            resultBadgeLevel.textContent = levelLabel;
-
-            const activeEvaluationRules = evaluationLogic[selectedTestLevel];
-            let finalLevelInfo = activeEvaluationRules[0];
-            for (let rule of activeEvaluationRules) {
-                if (score >= rule.min && score <= rule.max) {
-                    finalLevelInfo = rule;
-                    break;
-                }
-            }
-
-            hskTitle.textContent = finalLevelInfo.title;
-            hskComment.textContent = finalLevelInfo.comment;
-            hskRoadmap.textContent = finalLevelInfo.roadmap;
-
-            reviewContent.innerHTML = '';
-            activeQuestionsList.forEach((q, idx) => {
-                const userAns = userAnswers[idx];
-                const isCorrect = userAns === q.answer;
-                
-                const reviewCard = document.createElement('div');
-                reviewCard.className = `review-card ${isCorrect ? 'correct' : 'incorrect'}`;
-                
-                reviewCard.innerHTML = `
-                    <div class="review-q-header">
-                        <span>Q${idx + 1}. [${q.level}] ${q.pinyin}</span>
-                        <span class="status-badge ${isCorrect ? 'correct' : 'incorrect'}">
-                            ${isCorrect ? '<i class="fa-solid fa-circle-check"></i> 정답' : '<i class="fa-solid fa-circle-xmark"></i> 오답'}
-                        </span>
-                    </div>
-                    <div style="font-weight: 500; font-size: 0.95rem; margin-top: 4px; white-space: pre-line;">${q.question}</div>
-                    <div class="review-choices">
-                        <div>• 선택한 답안: <strong>${q.options[userAns]}</strong></div>
-                        ${!isCorrect ? `<div>• 정답 답안: <strong style="color: var(--accent-green);">${q.options[q.answer]}</strong></div>` : ''}
-                    </div>
-                    <div class="review-explanation">
-                        <strong><i class="fa-regular fa-lightbulb"></i> 오답풀이 및 해설:</strong><br>
-                        ${q.explanation}
-                    </div>
-                `;
-                reviewContent.appendChild(reviewCard);
-            });
-        }
-
-        function toggleReview() {
-            const isVisible = reviewContent.style.display === 'flex';
-            if (isVisible) {
-                reviewContent.style.display = 'none';
-                reviewIcon.className = 'fa-solid fa-chevron-down';
-            } else {
-                reviewContent.style.display = 'flex';
-                reviewIcon.className = 'fa-solid fa-chevron-up';
-            }
-        }
-
-        function copyCounselingReport() {
-            let score = totalScore.textContent;
-            let levelTitle = hskTitle.textContent;
-            let levelComment = hskComment.textContent;
-            let levelRoadmap = hskRoadmap.textContent;
-            let levelLabel = resultBadgeLevel.textContent;
-            
-            const today = new Date().toISOString().split('T')[0];
-            const markdownReport = `### 📋 중국어 과외 레벨 테스트 결과보고서
-- **이름:** ${studentInfo.name}
-- **나이:** ${studentInfo.age}세
-- **연락처:** ${studentInfo.phone}
-- **테스트 일자:** ${today}
-- **실시 시험:** **${levelLabel}**
-- **점수:** ${score} / 20 점
-- **진단 결과:** **${levelTitle}**
-
-#### 🗺️ 진단맵 코멘트
-${levelComment}
-
-#### 🎓 앞으로의 공부 방향
-${levelRoadmap}
-
-#### 세부 문항 채점 결과 및 해설
-${activeQuestionsList.map((q, idx) => {
-    const isCorrect = userAnswers[idx] === q.answer;
-    return `${idx + 1}. [${q.level}] ${q.question.replace(/\n/g, ' ')} (${q.pinyin})
-   - **결과:** ${isCorrect ? 'O (정답)' : 'X (오답)'}
-   - **학습자 선택:** ${q.options[userAnswers[idx]]} | **정답:** ${q.options[q.answer]}
-   - **💡 해설:** ${q.explanation}`;
-}).join('\n\n')}
-`;
-
-            navigator.clipboard.writeText(markdownReport).then(() => {
-                showToast("상담 보고서가 클립보드에 복사되었습니다!");
-            }).catch(err => {
-                console.error("복사 실패: ", err);
-                showToast("복사 실패. 수동으로 복사해주세요.");
-            });
-        }
-
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-message').textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-
-        function restartQuiz() {
-            resultScreen.classList.remove('active');
-            startScreen.classList.add('active');
-            inputName.value = '';
-            inputAge.value = '';
-            inputPhone.value = '';
-            reviewContent.style.display = 'none';
-            reviewIcon.className = 'fa-solid fa-chevron-down';
-        }
-    </script>
+    // Initial render
+    renderContent(currentIndex);
+  </script>
 </body>
 </html>
