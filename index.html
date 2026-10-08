@@ -5853,16 +5853,102 @@ let isPinyinHidden = false;
 let quizScore = 0;
 let answeredQuizzes = new Set();
 
-// TTS Speech synthesis
-function speakText(text) {
+// =====================================================
+// Chinese TTS - 중국어 음성 재생
+// =====================================================
+
+let chineseVoice = null;
+let voicesLoaded = false;
+
+// 중국어 음성 목록 가져오기
+function loadChineseVoice() {
   if (!('speechSynthesis' in window)) {
-    alert('이 브라우저는 음성 합성을 지원하지 않습니다.');
     return;
   }
+
+  const voices = window.speechSynthesis.getVoices();
+
+  if (!voices || voices.length === 0) {
+    return;
+  }
+
+  // 중국어 음성만 필터링
+  const chineseVoices = voices.filter(voice => {
+    const lang = (voice.lang || '').toLowerCase();
+
+    return (
+      lang === 'zh-cn' ||
+      lang === 'zh-hans-cn' ||
+      lang.startsWith('zh-cn') ||
+      lang.startsWith('zh-hans')
+    );
+  });
+
+  // 우선순위:
+  // 1. zh-CN
+  // 2. zh-Hans
+  // 3. 그 외 중국어 음성
+  chineseVoice =
+    chineseVoices.find(v => v.lang.toLowerCase() === 'zh-cn') ||
+    chineseVoices.find(v => v.lang.toLowerCase().startsWith('zh-hans')) ||
+    chineseVoices[0] ||
+    null;
+
+  voicesLoaded = true;
+}
+
+// 브라우저가 음성 목록을 늦게 불러오는 경우 대응
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = loadChineseVoice;
+
+  // 처음 한 번 실행
+  loadChineseVoice();
+}
+
+
+// -----------------------------------------------------
+// 중국어 음성 재생
+// -----------------------------------------------------
+function speakText(text) {
+
+  if (!('speechSynthesis' in window)) {
+    alert(
+      '이 브라우저는 음성 합성을 지원하지 않습니다.\n' +
+      'Chrome, Safari 또는 최신 Edge에서 이용해주세요.'
+    );
+    return;
+  }
+
+  // 현재 재생 중인 음성 정지
   window.speechSynthesis.cancel();
+
+  // 음성 목록이 아직 안 불러와졌다면 다시 불러오기
+  if (!voicesLoaded || !chineseVoice) {
+    loadChineseVoice();
+  }
+
   const utterance = new SpeechSynthesisUtterance(text);
+
+  // 중국어 설정
   utterance.lang = 'zh-CN';
-  utterance.rate = 0.9; // 살짝 자연스럽고 또렷하게
+
+  // 중국어 음성이 발견되었으면 해당 음성 사용
+  if (chineseVoice) {
+    utterance.voice = chineseVoice;
+    utterance.lang = chineseVoice.lang;
+  }
+
+  // 속도
+  // 0.9 = 너무 빠르지 않고 학습용으로 적당한 속도
+  utterance.rate = 0.9;
+
+  // 음높이
+  utterance.pitch = 1.0;
+
+  // 음량
+  utterance.volume = 1.0;
+
+  // 음성 재생
   window.speechSynthesis.speak(utterance);
 }
 
@@ -6035,6 +6121,10 @@ function checkQuiz(qIdx, selectedOpt, correctOpt, btn) {
 
 // Initialize on Load
 window.addEventListener('DOMContentLoaded', () => {
+
+  // 중국어 음성 목록 미리 로드
+  loadChineseVoice();
+
   const savedTheme = localStorage.getItem('ebook_theme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
   document.getElementById('theme-icon').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
